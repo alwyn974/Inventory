@@ -215,7 +215,7 @@ private suspend fun uploadItemImage(call: ApplicationCall, minioService: MinioSe
 
     val updated = transaction {
         // Get old image URL
-        val oldImageUrl = Items.select { Items.id eq UUID.fromString(itemId) }
+        val oldImageUrl = Items.selectAll().where { Items.id eq UUID.fromString(itemId) }
             .singleOrNull()?.get(Items.imageUrl)
 
         // Update item with new image URL
