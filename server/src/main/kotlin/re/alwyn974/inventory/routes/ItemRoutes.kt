@@ -11,6 +11,7 @@ import io.ktor.server.routing.*
 import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import re.alwyn974.inventory.model.*
 import re.alwyn974.inventory.service.MinioService
@@ -258,7 +259,7 @@ private fun mapItemRowToDto(itemRow: ResultRow): ItemDto {
         }
 
         val folder = itemRow[Items.folder]?.let { folderId ->
-            Folders.select { Folders.id eq folderId }.singleOrNull()?.let { folderRow ->
+            Folders.selectAll().where { Folders.id eq folderId }.singleOrNull()?.let { folderRow ->
                 FolderDto(
                     id = folderRow[Folders.id].toString(),
                     name = folderRow[Folders.name],
