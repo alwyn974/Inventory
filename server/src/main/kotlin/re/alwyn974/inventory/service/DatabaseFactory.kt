@@ -1,16 +1,19 @@
 package re.alwyn974.inventory.service
 
+import com.oracle.graal.compiler.enterprise.phases.CountedStripMiningPhase.db
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import re.alwyn974.inventory.model.*
+import re.alwyn974.inventory.model.Users.username
 
 object DatabaseFactory {
     fun init() {
-        val driverClassName = "org.h2.Driver"
-        val jdbcURL = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"
+        val driverClassName = System.getenv("DATABASE_DRIVER") ?: "org.h2.Driver"
+        val jdbcURL = System.getenv("DATABASE_URL") ?: "jdbc:h2:./inventory;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"
+
         val database = Database.connect(createHikariDataSource(jdbcURL, driverClassName))
 
         transaction(database) {
