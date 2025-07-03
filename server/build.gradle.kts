@@ -7,6 +7,7 @@ plugins {
 
 group = "re.alwyn974.inventory"
 version = "1.0.0"
+
 application {
     mainClass.set("re.alwyn974.inventory.ApplicationKt")
 
@@ -19,6 +20,7 @@ dependencies {
     implementation(libs.logback)
     implementation(libs.ktor.serverCore)
     implementation(libs.ktor.serverNetty)
+    implementation(libs.ktor.server.compression)
 
     // Content negotiation and serialization
     implementation(libs.ktor.server.content.negotiation.jvm)
@@ -36,6 +38,8 @@ dependencies {
 
     // Call logging
     implementation(libs.ktor.server.call.logging.jvm)
+    implementation(libs.ktor.server.call.logging)
+    implementation(libs.ktor.server.call.id)
 
     // Database
     implementation(libs.exposed.core)
@@ -61,6 +65,17 @@ dependencies {
     implementation(libs.ktor.server.openapi)
     implementation(libs.ktor.server.swagger)
     implementation(libs.swagger.codegen.generators)
+    implementation(libs.ktor.openapi)
+
+    // Koin
+    implementation(libs.koin.ktor)
+    implementation(libs.koin.logger.slf4j)
+
+    // Rate limiting
+    implementation(libs.ktor.server.rate.limiting)
+    implementation(libs.ktor.server.task.scheduling.core)
+    implementation(libs.ktor.server.task.scheduling.redis)
+    implementation(libs.ktor.server.task.scheduling.jdbc)
 
     testImplementation(libs.ktor.serverTestHost)
     testImplementation(libs.kotlin.testJunit)

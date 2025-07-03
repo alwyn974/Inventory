@@ -1,6 +1,10 @@
 package re.alwyn974.inventory
 
 import com.auth0.jwt.JWT
+import io.github.smiley4.ktoropenapi.OpenApi
+import io.github.smiley4.ktoropenapi.config.AuthScheme
+import io.github.smiley4.ktoropenapi.config.AuthType
+import io.github.smiley4.ktoropenapi.openApi
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -11,13 +15,9 @@ import io.ktor.server.netty.*
 import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.plugins.openapi.*
 import io.ktor.server.plugins.statuspages.*
-import io.ktor.server.plugins.swagger.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.util.url
-import io.swagger.codegen.v3.generators.html.StaticHtmlCodegen
 import kotlinx.serialization.json.Json
 import re.alwyn974.inventory.model.ErrorResponse
 import re.alwyn974.inventory.routes.*
@@ -104,8 +104,31 @@ fun Application.module() {
         }
     }
 
+    install(OpenApi) {
+        info {
+            title = "Inventory API"
+            version = "1.0.0"
+            description = "API for managing inventory items, categories, tags, and folders."
+        }
+        server {
+            url = "http://localhost:$SERVER_PORT"
+            description = "Serveur de développement"
+        }
+        security {
+            securityScheme("JWT") {
+                type = AuthType.HTTP
+                scheme = AuthScheme.BEARER
+                bearerFormat = "JWT"
+            }
+        }
+    }
+
     // Configure routing
     routing {
+        route("openapi.json") {
+            openApi()
+        }
+
         // Scalar UI (interface moderne)
         get("/docs") {
             call.respondText(
