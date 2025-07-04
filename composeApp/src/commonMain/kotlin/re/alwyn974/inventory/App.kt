@@ -17,7 +17,7 @@ fun App() {
 @Composable
 fun InventoryApp() {
     val apiClient = remember { ApiClient() }
-    var currentScreen by remember { mutableStateOf(Screen.Login) }
+    var currentScreen by remember { mutableStateOf<Screen>(Screen.Login) }
     var isLoggedIn by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<ItemDto?>(null) }
 

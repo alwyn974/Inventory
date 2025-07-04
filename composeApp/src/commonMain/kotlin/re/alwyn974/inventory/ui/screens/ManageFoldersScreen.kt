@@ -8,7 +8,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -213,7 +213,7 @@ fun FolderCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.Folder,
+                    imageVector = Icons.Default.FolderOpen,
                     contentDescription = "Dossier",
                     modifier = Modifier.size(32.dp),
                     tint = MaterialTheme.colorScheme.primary

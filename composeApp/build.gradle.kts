@@ -64,6 +64,9 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(projects.shared)
 
+            // Material Icons - Extended
+            implementation(compose.materialIconsExtended)
+
             // Ktor for HTTP client
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
