@@ -1,6 +1,8 @@
-package re.alwyn974.inventory.models
+package re.alwyn974.inventory.shared.model
 
 import kotlinx.serialization.Serializable
+
+// ========== Authentication Models ==========
 
 @Serializable
 data class LoginRequest(
@@ -13,6 +15,8 @@ data class LoginResponse(
     val token: String,
     val user: UserDto
 )
+
+// ========== User Models ==========
 
 @Serializable
 data class UserDto(
@@ -31,6 +35,25 @@ enum class UserRole {
 }
 
 @Serializable
+data class CreateUserRequest(
+    val username: String,
+    val email: String,
+    val password: String,
+    val role: UserRole
+)
+
+@Serializable
+data class UpdateUserRequest(
+    val username: String? = null,
+    val email: String? = null,
+    val password: String? = null,
+    val role: UserRole? = null,
+    val isActive: Boolean? = null
+)
+
+// ========== Item Models ==========
+
+@Serializable
 data class ItemDto(
     val id: String,
     val name: String,
@@ -39,7 +62,7 @@ data class ItemDto(
     val imageUrl: String? = null,
     val category: CategoryDto? = null,
     val folder: FolderDto? = null,
-    val tags: List<TagDto> = emptyList(),
+    val tags: List<TagDto>,
     val createdBy: String,
     val createdAt: String,
     val updatedAt: String
@@ -52,7 +75,7 @@ data class CreateItemRequest(
     val quantity: Int,
     val categoryId: String? = null,
     val folderId: String? = null,
-    val tagIds: List<String> = emptyList()
+    val tagIds: List<String>
 )
 
 @Serializable
@@ -64,6 +87,8 @@ data class UpdateItemRequest(
     val folderId: String? = null,
     val tagIds: List<String>? = null
 )
+
+// ========== Category Models ==========
 
 @Serializable
 data class CategoryDto(
@@ -87,6 +112,8 @@ data class UpdateCategoryRequest(
     val description: String? = null
 )
 
+// ========== Tag Models ==========
+
 @Serializable
 data class TagDto(
     val id: String,
@@ -101,6 +128,8 @@ data class CreateTagRequest(
     val name: String,
     val color: String? = null
 )
+
+// ========== Folder Models ==========
 
 @Serializable
 data class FolderDto(
@@ -129,6 +158,8 @@ data class UpdateFolderRequest(
     val fullPath: String? = null,
     val parentFolderId: String? = null
 )
+
+// ========== Common Response Models ==========
 
 @Serializable
 data class ErrorResponse(

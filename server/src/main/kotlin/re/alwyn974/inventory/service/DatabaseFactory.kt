@@ -7,6 +7,7 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import re.alwyn974.inventory.config.AppConfig
 import re.alwyn974.inventory.model.*
+import re.alwyn974.inventory.shared.model.UserRole
 
 class DatabaseFactory(private val config: AppConfig) {
     fun init() {

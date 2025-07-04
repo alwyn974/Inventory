@@ -19,6 +19,16 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import re.alwyn974.inventory.model.*
+import re.alwyn974.inventory.shared.model.CategoryDto
+import re.alwyn974.inventory.shared.model.CreateCategoryRequest
+import re.alwyn974.inventory.shared.model.CreateFolderRequest
+import re.alwyn974.inventory.shared.model.CreateTagRequest
+import re.alwyn974.inventory.shared.model.ErrorResponse
+import re.alwyn974.inventory.shared.model.FolderDto
+import re.alwyn974.inventory.shared.model.SuccessResponse
+import re.alwyn974.inventory.shared.model.TagDto
+import re.alwyn974.inventory.shared.model.UpdateCategoryRequest
+import re.alwyn974.inventory.shared.model.UpdateFolderRequest
 import java.util.*
 
 fun Route.categoryRoutes() {

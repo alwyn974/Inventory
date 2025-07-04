@@ -9,7 +9,7 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-import re.alwyn974.inventory.models.*
+import re.alwyn974.inventory.shared.model.*
 
 class ApiClient {
     private val client = HttpClient {
@@ -17,10 +17,12 @@ class ApiClient {
             json(Json {
                 ignoreUnknownKeys = true
                 isLenient = true
+                prettyPrint = true
+                encodeDefaults = true
             })
         }
         install(Logging) {
-            level = LogLevel.INFO
+            level = LogLevel.ALL
         }
         install(DefaultRequest) {
             url("http://localhost:8080/api/v1/")

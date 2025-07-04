@@ -3,7 +3,7 @@ package re.alwyn974.inventory
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import re.alwyn974.inventory.models.*
+import re.alwyn974.inventory.shared.model.*
 import re.alwyn974.inventory.network.ApiClient
 import re.alwyn974.inventory.ui.screens.*
 

@@ -18,9 +18,21 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.koin.ktor.ext.inject
-import re.alwyn974.inventory.model.*
+import re.alwyn974.inventory.model.Permissions
+import re.alwyn974.inventory.model.RolePermissions
+import re.alwyn974.inventory.model.Users
+import re.alwyn974.inventory.model.Users.email
+import re.alwyn974.inventory.model.Users.username
 import re.alwyn974.inventory.service.JwtService
 import re.alwyn974.inventory.service.PasswordService
+import re.alwyn974.inventory.shared.model.CreateUserRequest
+import re.alwyn974.inventory.shared.model.ErrorResponse
+import re.alwyn974.inventory.shared.model.LoginRequest
+import re.alwyn974.inventory.shared.model.LoginResponse
+import re.alwyn974.inventory.shared.model.SuccessResponse
+import re.alwyn974.inventory.shared.model.UpdateUserRequest
+import re.alwyn974.inventory.shared.model.UserDto
+import re.alwyn974.inventory.shared.model.UserRole
 import java.util.*
 
 fun Route.authRoutes() {
@@ -79,8 +91,8 @@ fun Route.authRoutes() {
 
             val userDto = UserDto(
                 id = user[Users.id].toString(),
-                username = user[Users.username],
-                email = user[Users.email],
+                username = user[username],
+                email = user[email],
                 role = user[Users.role],
                 isActive = user[Users.isActive],
                 createdAt = user[Users.createdAt].toString(),
@@ -125,8 +137,8 @@ fun Route.authRoutes() {
 
                 val userDto = UserDto(
                     id = user[Users.id].toString(),
-                    username = user[Users.username],
-                    email = user[Users.email],
+                    username = user[username],
+                    email = user[email],
                     role = user[Users.role],
                     isActive = user[Users.isActive],
                     createdAt = user[Users.createdAt].toString(),
@@ -168,8 +180,8 @@ fun Route.userRoutes() {
                     Users.selectAll().map { row ->
                         UserDto(
                             id = row[Users.id].toString(),
-                            username = row[Users.username],
-                            email = row[Users.email],
+                            username = row[username],
+                            email = row[email],
                             role = row[Users.role],
                             isActive = row[Users.isActive],
                             createdAt = row[Users.createdAt].toString(),
@@ -278,8 +290,8 @@ fun Route.userRoutes() {
 
                 val userDto = UserDto(
                     id = user[Users.id].toString(),
-                    username = user[Users.username],
-                    email = user[Users.email],
+                    username = user[username],
+                    email = user[email],
                     role = user[Users.role],
                     isActive = user[Users.isActive],
                     createdAt = user[Users.createdAt].toString(),

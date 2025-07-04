@@ -3,6 +3,7 @@ package re.alwyn974.inventory.model
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.kotlin.datetime.CurrentDateTime
 import org.jetbrains.exposed.sql.kotlin.datetime.datetime
+import re.alwyn974.inventory.shared.model.UserRole
 
 object Users : UUIDTable("users") {
     val username = varchar("username", 50).uniqueIndex()
@@ -72,11 +73,4 @@ object RolePermissions : UUIDTable("role_permissions") {
     init {
         uniqueIndex(role, permission)
     }
-}
-
-enum class UserRole {
-    ADMIN,
-    MANAGER,
-    USER,
-    VIEWER
 }

@@ -14,8 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import re.alwyn974.inventory.models.*
 import re.alwyn974.inventory.network.ApiClient
+import re.alwyn974.inventory.shared.model.CategoryDto
+import re.alwyn974.inventory.shared.model.CreateItemRequest
+import re.alwyn974.inventory.shared.model.FolderDto
+import re.alwyn974.inventory.shared.model.ItemDto
+import re.alwyn974.inventory.shared.model.TagDto
+import re.alwyn974.inventory.shared.model.UpdateItemRequest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -160,13 +165,16 @@ fun CreateEditItemScreen(
 
                     Button(
                         onClick = {
+                            println("Debug: Bouton cliqué - name='$name', quantity='$quantity'")
                             if (name.isNotBlank() && quantity.toIntOrNull() != null) {
+                                println("Debug: Validation OK, lancement de la requête")
                                 isLoading = true
                                 errorMessage = null
                                 scope.launch {
                                     try {
                                         if (item == null) {
-                                            apiClient.createItem(
+                                            println("Debug: Création d'un nouvel item")
+                                            val result = apiClient.createItem(
                                                 CreateItemRequest(
                                                     name = name,
                                                     description = description.ifBlank { null },
@@ -176,7 +184,9 @@ fun CreateEditItemScreen(
                                                     tagIds = selectedTags.map { it.id }
                                                 )
                                             )
+                                            println("Debug: Item créé avec succès: $result")
                                         } else {
+                                            println("Debug: Mise à jour de l'item ${item.id}")
                                             apiClient.updateItem(
                                                 item.id,
                                                 UpdateItemRequest(
@@ -188,18 +198,31 @@ fun CreateEditItemScreen(
                                                     tagIds = selectedTags.map { it.id }
                                                 )
                                             )
+                                            println("Debug: Item mis à jour avec succès")
                                         }
+                                        println("Debug: Appel de onSaved()")
                                         onSaved()
                                     } catch (e: Exception) {
+                                        println("Debug: Erreur lors de la sauvegarde: ${e.message}")
+                                        e.printStackTrace()
                                         errorMessage = "Erreur lors de la sauvegarde: ${e.message}"
                                     } finally {
                                         isLoading = false
+                                        println("Debug: Fin du processus de sauvegarde")
                                     }
+                                }
+                            } else {
+                                println("Debug: Validation échouée - name='$name' (blank=${name.isBlank()}), quantity='$quantity' (valid=${quantity.toIntOrNull() != null})")
+                                // Afficher un message d'erreur si la validation échoue
+                                errorMessage = when {
+                                    name.isBlank() -> "Le nom est obligatoire"
+                                    quantity.toIntOrNull() == null -> "La quantité doit être un nombre valide"
+                                    else -> "Veuillez remplir tous les champs obligatoires"
                                 }
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        enabled = !isLoading && name.isNotBlank() && quantity.toIntOrNull() != null
+                        enabled = !isLoading
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(

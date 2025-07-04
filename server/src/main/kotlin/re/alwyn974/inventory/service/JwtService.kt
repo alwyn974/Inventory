@@ -4,7 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTVerificationException
 import re.alwyn974.inventory.config.AppConfig
-import re.alwyn974.inventory.model.UserRole
+import re.alwyn974.inventory.shared.model.UserRole
 import java.util.*
 
 class JwtService(private val config: AppConfig) {

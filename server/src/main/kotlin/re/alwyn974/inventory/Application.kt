@@ -28,11 +28,11 @@ import re.alwyn974.inventory.config.AppConfig
 import re.alwyn974.inventory.config.appModule
 import re.alwyn974.inventory.model.ApiInfoResponse
 import re.alwyn974.inventory.model.DocumentationLinks
-import re.alwyn974.inventory.model.ErrorResponse
 import re.alwyn974.inventory.routes.*
 import re.alwyn974.inventory.service.DatabaseFactory
 import re.alwyn974.inventory.service.JwtService
 import re.alwyn974.inventory.service.MinioService
+import re.alwyn974.inventory.shared.model.ErrorResponse
 
 fun main() {
     val config = AppConfig

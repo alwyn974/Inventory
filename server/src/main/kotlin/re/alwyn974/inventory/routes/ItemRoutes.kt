@@ -20,6 +20,14 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import re.alwyn974.inventory.model.*
 import re.alwyn974.inventory.service.MinioService
+import re.alwyn974.inventory.shared.model.CategoryDto
+import re.alwyn974.inventory.shared.model.CreateItemRequest
+import re.alwyn974.inventory.shared.model.ErrorResponse
+import re.alwyn974.inventory.shared.model.FolderDto
+import re.alwyn974.inventory.shared.model.ItemDto
+import re.alwyn974.inventory.shared.model.SuccessResponse
+import re.alwyn974.inventory.shared.model.TagDto
+import re.alwyn974.inventory.shared.model.UpdateItemRequest
 import java.util.*
 
 fun Route.itemRoutes(minioService: MinioService) {

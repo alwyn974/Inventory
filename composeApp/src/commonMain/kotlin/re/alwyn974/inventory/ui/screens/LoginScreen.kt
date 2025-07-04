@@ -14,8 +14,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import re.alwyn974.inventory.models.LoginRequest
 import re.alwyn974.inventory.network.ApiClient
+import re.alwyn974.inventory.shared.model.LoginRequest
 
 @Composable
 fun LoginScreen(

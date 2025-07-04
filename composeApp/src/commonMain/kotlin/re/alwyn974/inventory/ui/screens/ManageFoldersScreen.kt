@@ -17,8 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import re.alwyn974.inventory.models.*
 import re.alwyn974.inventory.network.ApiClient
+import re.alwyn974.inventory.shared.model.CreateFolderRequest
+import re.alwyn974.inventory.shared.model.FolderDto
+import re.alwyn974.inventory.shared.model.UpdateFolderRequest
+import kotlin.collections.find
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
