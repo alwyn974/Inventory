@@ -24,6 +24,8 @@ import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
 import re.alwyn974.inventory.config.AppConfig
 import re.alwyn974.inventory.config.appModule
+import re.alwyn974.inventory.model.ApiInfoResponse
+import re.alwyn974.inventory.model.DocumentationLinks
 import re.alwyn974.inventory.model.ErrorResponse
 import re.alwyn974.inventory.routes.*
 import re.alwyn974.inventory.service.DatabaseFactory
@@ -148,14 +150,14 @@ fun Application.module() {
         }
 
         get("/") {
-            call.respond(mapOf(
-                "message" to "Inventory API",
-                "version" to "1.0.0",
-                "status" to "running",
-                "documentation" to mapOf(
-                    "scalar" to "/docs",
-                    "swagger" to "/swagger",
-                    "openapi" to "/openapi.json"
+            call.respond(ApiInfoResponse(
+                message = "Inventory API",
+                version = "1.0.0",
+                status = "running",
+                documentation = DocumentationLinks(
+                    scalar = "/docs",
+                    swagger = "/swagger",
+                    openapi = "/openapi.json"
                 )
             ))
         }

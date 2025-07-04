@@ -161,3 +161,18 @@ data class ErrorResponse(
 data class SuccessResponse(
     val message: String
 )
+
+@Serializable
+data class ApiInfoResponse(
+    val message: String,
+    val version: String,
+    val status: String,
+    val documentation: DocumentationLinks
+)
+
+@Serializable
+data class DocumentationLinks(
+    val scalar: String,
+    val swagger: String,
+    val openapi: String
+)
