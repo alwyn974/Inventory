@@ -147,6 +147,9 @@ fun Application.module() {
             description = "API Documentation"
             summary = "Access to API documentation"
             tags("General")
+            response {
+                HttpStatusCode.OK to "Documentation in HTML format"
+            }
         }) {
             call.respondText(
                 this::class.java.classLoader.getResource("scalar.html")?.readText() ?: "Documentation not found",
@@ -158,6 +161,9 @@ fun Application.module() {
             description = "API Info"
             summary = "Get API information"
             tags("General")
+            response {
+                HttpStatusCode.OK to "API information"
+            }
         }) {
             call.respond(ApiInfoResponse(
                 message = "Inventory API",
@@ -174,6 +180,9 @@ fun Application.module() {
             description = "Health check endpoint"
             summary = "Check if the server is healthy"
             tags("General")
+            response {
+                HttpStatusCode.OK to "Server health status"
+            }
         }) {
             call.respond(mapOf("status" to "healthy"))
         }

@@ -3,7 +3,7 @@ package re.alwyn974.inventory.routes
 import io.github.smiley4.ktoropenapi.route
 import io.github.smiley4.ktoropenapi.get
 import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
+import io.github.smiley4.ktoropenapi.patch
 import io.github.smiley4.ktoropenapi.delete
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -112,10 +112,10 @@ fun Route.itemRoutes(minioService: MinioService) {
                 getItemById(call)
             }
 
-            put("/{id}", {
+            patch("/{id}", {
                 tags = listOf("Items")
                 summary = "Update item"
-                description = "Update an existing inventory item"
+                description = "Update an existing inventory item (partial update)"
                 securitySchemeNames = listOf("JWT")
                 request {
                     body<UpdateItemRequest> {

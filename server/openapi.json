@@ -1,0 +1,2255 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "Inventory API",
+    "description" : "API for managing inventory items, categories, tags, and folders.",
+    "version" : "1.0.0"
+  },
+  "externalDocs" : {
+    "url" : "/"
+  },
+  "servers" : [ {
+    "url" : "http://localhost:8080",
+    "description" : "Development server"
+  } ],
+  "tags" : [ ],
+  "paths" : {
+    "/docs" : {
+      "get" : {
+        "tags" : [ "General" ],
+        "summary" : "Access to API documentation",
+        "description" : "API Documentation",
+        "parameters" : [ ],
+        "responses" : { },
+        "deprecated" : false
+      }
+    },
+    "" : {
+      "get" : {
+        "tags" : [ "General" ],
+        "summary" : "Get API information",
+        "description" : "API Info",
+        "parameters" : [ ],
+        "responses" : { },
+        "deprecated" : false
+      }
+    },
+    "/health" : {
+      "get" : {
+        "tags" : [ "General" ],
+        "summary" : "Check if the server is healthy",
+        "description" : "Health check endpoint",
+        "parameters" : [ ],
+        "responses" : { },
+        "deprecated" : false
+      }
+    },
+    "/api/v1/auth/login" : {
+      "post" : {
+        "tags" : [ "Authentication" ],
+        "summary" : "User login",
+        "description" : "Authenticate user and get JWT token",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.LoginRequest"
+              },
+              "examples" : {
+                "default" : {
+                  "value" : {
+                    "username" : "admin",
+                    "password" : "admin123"
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Login successful",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.LoginResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Invalid credentials",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Account disabled",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false
+      }
+    },
+    "/api/v1/auth/me" : {
+      "get" : {
+        "tags" : [ "Authentication" ],
+        "summary" : "Get current user",
+        "description" : "Get information about the currently authenticated user",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "User information",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UserDto"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "User not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/users" : {
+      "get" : {
+        "tags" : [ "Users" ],
+        "summary" : "List all users",
+        "description" : "Get a list of all users in the system",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of users",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UserDto"
+                  },
+                  "title" : "List<UserDto>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Users" ],
+        "summary" : "Create new user",
+        "description" : "Create a new user account",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.CreateUserRequest"
+              },
+              "examples" : {
+                "admin" : {
+                  "value" : {
+                    "username" : "newuser",
+                    "email" : "user@example.com",
+                    "password" : "password123",
+                    "role" : "USER"
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "description" : "User created successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "409" : {
+            "description" : "Username or email already exists",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/users/{id}" : {
+      "get" : {
+        "tags" : [ "Users" ],
+        "summary" : "Get user by ID",
+        "description" : "Get a specific user by their ID",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "User information",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UserDto"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "User not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Users" ],
+        "summary" : "Delete user",
+        "description" : "Delete a user from the system",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "User deleted successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "User not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Users" ],
+        "summary" : "Update user",
+        "description" : "Update an existing user (partial update)",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UpdateUserRequest"
+              },
+              "examples" : {
+                "update" : {
+                  "value" : {
+                    "username" : "updateduser",
+                    "email" : "updated@example.com"
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "User updated successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "User not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/items" : {
+      "get" : {
+        "tags" : [ "Items" ],
+        "summary" : "List all items",
+        "description" : "Get a list of all inventory items",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of items",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ItemDto"
+                  },
+                  "title" : "List<ItemDto>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Items" ],
+        "summary" : "Create new item",
+        "description" : "Create a new inventory item",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.CreateItemRequest"
+              },
+              "examples" : {
+                "example" : {
+                  "value" : {
+                    "name" : "Laptop Dell XPS 13",
+                    "description" : "High-performance laptop for development",
+                    "quantity" : 5,
+                    "tagIds" : [ ]
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Item created successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string",
+                    "title" : "String"
+                  },
+                  "title" : "Map<String,String>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/items/{id}" : {
+      "get" : {
+        "tags" : [ "Items" ],
+        "summary" : "Get item by ID",
+        "description" : "Get a specific inventory item by its ID",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Item information",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ItemDto"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Item not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Items" ],
+        "summary" : "Delete item",
+        "description" : "Delete an inventory item",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Item deleted successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Item not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Items" ],
+        "summary" : "Update item",
+        "description" : "Update an existing inventory item (partial update)",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UpdateItemRequest"
+              },
+              "examples" : {
+                "update" : {
+                  "value" : {
+                    "name" : "Updated Laptop Dell XPS 13",
+                    "description" : "Updated high-performance laptop",
+                    "quantity" : 3
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Item updated successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Item not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/items/{id}/image" : {
+      "post" : {
+        "tags" : [ "Items" ],
+        "summary" : "Upload item image",
+        "description" : "Upload an image for an inventory item",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Image uploaded successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string",
+                    "title" : "String"
+                  },
+                  "title" : "Map<String,String>"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Invalid file type or no image provided",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Item not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/categories" : {
+      "get" : {
+        "tags" : [ "Categories" ],
+        "summary" : "List all categories",
+        "description" : "Get a list of all categories",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of categories",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/re.alwyn974.inventory.model.CategoryDto"
+                  },
+                  "title" : "List<CategoryDto>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Categories" ],
+        "summary" : "Create new category",
+        "description" : "Create a new category for organizing items",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.CreateCategoryRequest"
+              },
+              "examples" : {
+                "electronics" : {
+                  "value" : {
+                    "name" : "Electronics",
+                    "description" : "Electronic devices and components"
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Category created successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string",
+                    "title" : "String"
+                  },
+                  "title" : "Map<String,String>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/categories/{id}" : {
+      "get" : {
+        "tags" : [ "Categories" ],
+        "summary" : "Get category by ID",
+        "description" : "Get a specific category by its ID",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Category information",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.CategoryDto"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Category not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Categories" ],
+        "summary" : "Delete category",
+        "description" : "Delete a category from the system",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Category deleted successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Category not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Categories" ],
+        "summary" : "Update category",
+        "description" : "Update an existing category (partial update)",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UpdateCategoryRequest"
+              },
+              "examples" : {
+                "update" : {
+                  "value" : {
+                    "name" : "Updated Electronics",
+                    "description" : "Updated electronic devices and components"
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Category updated successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Category not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/tags" : {
+      "get" : {
+        "tags" : [ "Tags" ],
+        "summary" : "List all tags",
+        "description" : "Get a list of all tags",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of tags",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/re.alwyn974.inventory.model.TagDto"
+                  },
+                  "title" : "List<TagDto>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Tags" ],
+        "summary" : "Create new tag",
+        "description" : "Create a new tag for labeling items",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.CreateTagRequest"
+              },
+              "examples" : {
+                "urgent" : {
+                  "value" : {
+                    "name" : "Urgent",
+                    "color" : "#FF0000"
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Tag created successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string",
+                    "title" : "String"
+                  },
+                  "title" : "Map<String,String>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/tags/{id}" : {
+      "get" : {
+        "tags" : [ "Tags" ],
+        "summary" : "Get tag by ID",
+        "description" : "Get a specific tag by its ID",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Tag information",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.TagDto"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Tag not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Tags" ],
+        "summary" : "Delete tag",
+        "description" : "Delete a tag from the system",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Tag deleted successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Tag not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Tags" ],
+        "summary" : "Update tag",
+        "description" : "Update an existing tag (partial update)",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.CreateTagRequest"
+              },
+              "examples" : {
+                "update" : {
+                  "value" : {
+                    "name" : "Updated Urgent",
+                    "color" : "#FF6600"
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Tag updated successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Tag not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/folders" : {
+      "get" : {
+        "tags" : [ "Folders" ],
+        "summary" : "List all folders",
+        "description" : "Get a list of all folders with their full paths",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "List of folders",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "array",
+                  "items" : {
+                    "$ref" : "#/components/schemas/re.alwyn974.inventory.model.FolderDto"
+                  },
+                  "title" : "List<FolderDto>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "post" : {
+        "tags" : [ "Folders" ],
+        "summary" : "Create new folder",
+        "description" : "Create a new folder for organizing items in MinIO and mobile app",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.CreateFolderRequest"
+              },
+              "examples" : {
+                "warehouse" : {
+                  "value" : {
+                    "name" : "Warehouse A",
+                    "fullPath" : "/storage/warehouse-a",
+                    "description" : "Main warehouse storage area"
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Folder created successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object",
+                  "additionalProperties" : {
+                    "type" : "string",
+                    "title" : "String"
+                  },
+                  "title" : "Map<String,String>"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    },
+    "/api/v1/folders/{id}" : {
+      "get" : {
+        "tags" : [ "Folders" ],
+        "summary" : "Get folder by ID",
+        "description" : "Get a specific folder by its ID with full path information",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Folder information",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.FolderDto"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Folder not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "delete" : {
+        "tags" : [ "Folders" ],
+        "summary" : "Delete folder",
+        "description" : "Delete a folder from the system",
+        "parameters" : [ ],
+        "responses" : {
+          "200" : {
+            "description" : "Folder deleted successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Folder not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      },
+      "patch" : {
+        "tags" : [ "Folders" ],
+        "summary" : "Update folder",
+        "description" : "Update an existing folder including its full path (partial update)",
+        "parameters" : [ ],
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UpdateFolderRequest"
+              },
+              "examples" : {
+                "update" : {
+                  "value" : {
+                    "name" : "Updated Warehouse A",
+                    "fullPath" : "/storage/updated-warehouse-a",
+                    "description" : "Updated main warehouse storage area"
+                  }
+                }
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "description" : "Folder updated successfully",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.SuccessResponse"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Folder not found",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "401" : {
+            "description" : "Authentication required",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          },
+          "403" : {
+            "description" : "Insufficient permissions",
+            "headers" : { },
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/re.alwyn974.inventory.model.ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "deprecated" : false,
+        "security" : [ {
+          "JWT" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "re.alwyn974.inventory.model.LoginRequest" : {
+        "type" : "object",
+        "properties" : {
+          "password" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "username" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "password", "username" ],
+        "title" : "LoginRequest"
+      },
+      "re.alwyn974.inventory.model.UserDto" : {
+        "type" : "object",
+        "properties" : {
+          "createdAt" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "email" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "id" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "isActive" : {
+            "type" : "boolean",
+            "title" : "Boolean"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UserRole"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "username" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "createdAt", "email", "id", "isActive", "role", "updatedAt", "username" ],
+        "title" : "UserDto"
+      },
+      "re.alwyn974.inventory.model.UserRole" : {
+        "type" : "string",
+        "enum" : [ "ADMIN", "MANAGER", "USER", "VIEWER" ],
+        "title" : "UserRole"
+      },
+      "re.alwyn974.inventory.model.LoginResponse" : {
+        "type" : "object",
+        "properties" : {
+          "token" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "user" : {
+            "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UserDto"
+          }
+        },
+        "required" : [ "token", "user" ],
+        "title" : "LoginResponse"
+      },
+      "re.alwyn974.inventory.model.ErrorResponse" : {
+        "type" : "object",
+        "properties" : {
+          "error" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "message" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "error", "message" ],
+        "title" : "ErrorResponse"
+      },
+      "re.alwyn974.inventory.model.CreateUserRequest" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "password" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "role" : {
+            "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UserRole"
+          },
+          "username" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "email", "password", "role", "username" ],
+        "title" : "CreateUserRequest"
+      },
+      "re.alwyn974.inventory.model.SuccessResponse" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "message" ],
+        "title" : "SuccessResponse"
+      },
+      "re.alwyn974.inventory.model.UpdateUserRequest" : {
+        "type" : "object",
+        "properties" : {
+          "email" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "isActive" : {
+            "type" : [ "null", "boolean" ],
+            "title" : "Boolean"
+          },
+          "password" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "role" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/re.alwyn974.inventory.model.UserRole"
+            } ]
+          },
+          "username" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "title" : "UpdateUserRequest"
+      },
+      "re.alwyn974.inventory.model.ItemDto" : {
+        "type" : "object",
+        "properties" : {
+          "category" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/re.alwyn974.inventory.model.CategoryDto"
+            } ]
+          },
+          "createdAt" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "createdBy" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "folder" : {
+            "oneOf" : [ {
+              "type" : "null"
+            }, {
+              "$ref" : "#/components/schemas/re.alwyn974.inventory.model.FolderDto"
+            } ]
+          },
+          "id" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "imageUrl" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "quantity" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "tags" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/components/schemas/re.alwyn974.inventory.model.TagDto"
+            },
+            "title" : "List<TagDto>"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "createdAt", "createdBy", "id", "name", "quantity", "tags", "updatedAt" ],
+        "title" : "ItemDto"
+      },
+      "re.alwyn974.inventory.model.CategoryDto" : {
+        "type" : "object",
+        "properties" : {
+          "createdAt" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "createdBy" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "id" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "createdAt", "createdBy", "id", "name", "updatedAt" ],
+        "title" : "CategoryDto"
+      },
+      "re.alwyn974.inventory.model.FolderDto" : {
+        "type" : "object",
+        "properties" : {
+          "createdAt" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "createdBy" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "fullPath" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "id" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "parentFolderId" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "updatedAt" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "createdAt", "createdBy", "fullPath", "id", "name", "updatedAt" ],
+        "title" : "FolderDto"
+      },
+      "re.alwyn974.inventory.model.TagDto" : {
+        "type" : "object",
+        "properties" : {
+          "color" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "createdAt" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "createdBy" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "id" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "createdAt", "createdBy", "id", "name" ],
+        "title" : "TagDto"
+      },
+      "re.alwyn974.inventory.model.CreateItemRequest" : {
+        "type" : "object",
+        "properties" : {
+          "categoryId" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "folderId" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "quantity" : {
+            "type" : "integer",
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "tagIds" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string",
+              "title" : "String"
+            },
+            "title" : "List<String>"
+          }
+        },
+        "required" : [ "name", "quantity", "tagIds" ],
+        "title" : "CreateItemRequest"
+      },
+      "re.alwyn974.inventory.model.UpdateItemRequest" : {
+        "type" : "object",
+        "properties" : {
+          "categoryId" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "folderId" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "quantity" : {
+            "type" : [ "null", "integer" ],
+            "format" : "int32",
+            "title" : "Int"
+          },
+          "tagIds" : {
+            "type" : [ "null", "array" ],
+            "items" : {
+              "type" : "string",
+              "title" : "String"
+            },
+            "title" : "List<String>"
+          }
+        },
+        "title" : "UpdateItemRequest"
+      },
+      "re.alwyn974.inventory.model.CreateCategoryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "name" ],
+        "title" : "CreateCategoryRequest"
+      },
+      "re.alwyn974.inventory.model.UpdateCategoryRequest" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "title" : "UpdateCategoryRequest"
+      },
+      "re.alwyn974.inventory.model.CreateTagRequest" : {
+        "type" : "object",
+        "properties" : {
+          "color" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          }
+        },
+        "required" : [ "name" ],
+        "title" : "CreateTagRequest"
+      },
+      "re.alwyn974.inventory.model.CreateFolderRequest" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "fullPath" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "name" : {
+            "type" : "string",
+            "title" : "String"
+          },
+          "parentFolderId" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "required" : [ "fullPath", "name" ],
+        "title" : "CreateFolderRequest"
+      },
+      "re.alwyn974.inventory.model.UpdateFolderRequest" : {
+        "type" : "object",
+        "properties" : {
+          "description" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "fullPath" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "name" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          },
+          "parentFolderId" : {
+            "type" : [ "null", "string" ],
+            "title" : "String"
+          }
+        },
+        "title" : "UpdateFolderRequest"
+      }
+    },
+    "examples" : { },
+    "securitySchemes" : {
+      "JWT" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  },
+  "webhooks" : { }
+}

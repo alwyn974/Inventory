@@ -3,7 +3,7 @@ package re.alwyn974.inventory.routes
 import io.github.smiley4.ktoropenapi.route
 import io.github.smiley4.ktoropenapi.post
 import io.github.smiley4.ktoropenapi.get
-import io.github.smiley4.ktoropenapi.put
+import io.github.smiley4.ktoropenapi.patch
 import io.github.smiley4.ktoropenapi.delete
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -289,10 +289,10 @@ fun Route.userRoutes() {
                 call.respond(userDto)
             }
 
-            put("/{id}", {
+            patch("/{id}", {
                 tags = listOf("Users")
                 summary = "Update user"
-                description = "Update an existing user"
+                description = "Update an existing user (partial update)"
                 securitySchemeNames = listOf("JWT")
                 request {
                     body<UpdateUserRequest> {
@@ -322,7 +322,7 @@ fun Route.userRoutes() {
             }) {
                 call.requirePermission("user.update")
 
-                val userId = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest)
+                val userId = call.parameters["id"] ?: return@patch call.respond(HttpStatusCode.BadRequest)
                 val updateRequest = call.receive<UpdateUserRequest>()
 
                 val updated = transaction {

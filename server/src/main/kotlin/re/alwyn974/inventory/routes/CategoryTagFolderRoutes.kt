@@ -3,7 +3,7 @@ package re.alwyn974.inventory.routes
 import io.github.smiley4.ktoropenapi.route
 import io.github.smiley4.ktoropenapi.get
 import io.github.smiley4.ktoropenapi.post
-import io.github.smiley4.ktoropenapi.put
+import io.github.smiley4.ktoropenapi.patch
 import io.github.smiley4.ktoropenapi.delete
 import io.ktor.http.*
 import io.ktor.server.auth.*
@@ -155,10 +155,10 @@ fun Route.categoryRoutes() {
                 call.respond(categoryDto)
             }
 
-            put("/{id}", {
+            patch("/{id}", {
                 tags = listOf("Categories")
                 summary = "Update category"
-                description = "Update an existing category"
+                description = "Update an existing category (partial update)"
                 securitySchemeNames = listOf("JWT")
                 request {
                     body<UpdateCategoryRequest> {
@@ -188,7 +188,7 @@ fun Route.categoryRoutes() {
             }) {
                 call.requirePermission("category.update")
 
-                val categoryId = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest)
+                val categoryId = call.parameters["id"] ?: return@patch call.respond(HttpStatusCode.BadRequest)
                 val updateRequest = call.receive<UpdateCategoryRequest>()
 
                 val updated = transaction {
@@ -380,10 +380,10 @@ fun Route.tagRoutes() {
                 call.respond(tagDto)
             }
 
-            put("/{id}", {
+            patch("/{id}", {
                 tags = listOf("Tags")
                 summary = "Update tag"
-                description = "Update an existing tag"
+                description = "Update an existing tag (partial update)"
                 securitySchemeNames = listOf("JWT")
                 request {
                     body<CreateTagRequest> {
@@ -413,7 +413,7 @@ fun Route.tagRoutes() {
             }) {
                 call.requirePermission("tag.update")
 
-                val tagId = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest)
+                val tagId = call.parameters["id"] ?: return@patch call.respond(HttpStatusCode.BadRequest)
                 val updateRequest = call.receive<CreateTagRequest>()
 
                 val updated = transaction {
@@ -621,10 +621,10 @@ fun Route.folderRoutes() {
                 call.respond(folderDto)
             }
 
-            put("/{id}", {
+            patch("/{id}", {
                 tags = listOf("Folders")
                 summary = "Update folder"
-                description = "Update an existing folder including its full path"
+                description = "Update an existing folder including its full path (partial update)"
                 securitySchemeNames = listOf("JWT")
                 request {
                     body<UpdateFolderRequest> {
@@ -658,7 +658,7 @@ fun Route.folderRoutes() {
             }) {
                 call.requirePermission("folder.update")
 
-                val folderId = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest)
+                val folderId = call.parameters["id"] ?: return@patch call.respond(HttpStatusCode.BadRequest)
                 val updateRequest = call.receive<UpdateFolderRequest>()
 
                 val updated = transaction {
