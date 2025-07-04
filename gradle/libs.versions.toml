@@ -13,7 +13,7 @@ androidx-testExt = "1.2.1"
 composeHotReload = "1.0.0-alpha11"
 composeMultiplatform = "1.8.2"
 dotenvKotlin = "6.5.1"
-exposedCore = "0.46.0"
+exposedCore = "0.60.0"
 h2 = "2.2.224"
 hikaricp = "6.3.0"
 jbcrypt = "0.4"
@@ -21,14 +21,13 @@ junit = "4.13.2"
 koinKtor = "3.5.6"
 kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
-kotlinxDatetime = "0.6.0"
+kotlinxDatetime = "0.6.2"
 ktor = "3.2.0"
 ktorOpenapi = "5.1.0"
 ktorServerRateLimiting = "2.2.1"
 logback = "1.5.18"
 minio = "8.5.17"
 postgresql = "42.7.4"
-swaggerCodegenGenerators = "1.0.56"
 
 [libraries]
 dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenvKotlin" }
@@ -64,10 +63,8 @@ ktor-server-call-logging-jvm = { module = "io.ktor:ktor-server-call-logging-jvm"
 ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktor" }
 ktor-server-content-negotiation-jvm = { module = "io.ktor:ktor-server-content-negotiation-jvm", version.ref = "ktor" }
 ktor-server-cors-jvm = { module = "io.ktor:ktor-server-cors-jvm", version.ref = "ktor" }
-ktor-server-openapi = { module = "io.ktor:ktor-server-openapi", version.ref = "ktor" }
 ktor-server-rate-limiting = { module = "io.github.flaxoos:ktor-server-rate-limiting", version.ref = "ktorServerRateLimiting" }
 ktor-server-status-pages-jvm = { module = "io.ktor:ktor-server-status-pages-jvm", version.ref = "ktor" }
-ktor-server-swagger = { module = "io.ktor:ktor-server-swagger", version.ref = "ktor" }
 ktor-server-task-scheduling-core = { module = "io.github.flaxoos:ktor-server-task-scheduling-core", version.ref = "ktorServerRateLimiting" }
 ktor-server-task-scheduling-jdbc = { module = "io.github.flaxoos:ktor-server-task-scheduling-jdbc", version.ref = "ktorServerRateLimiting" }
 ktor-server-task-scheduling-redis = { module = "io.github.flaxoos:ktor-server-task-scheduling-redis", version.ref = "ktorServerRateLimiting" }
@@ -77,7 +74,6 @@ ktor-serverNetty = { module = "io.ktor:ktor-server-netty-jvm", version.ref = "kt
 ktor-serverTestHost = { module = "io.ktor:ktor-server-test-host-jvm", version.ref = "ktor" }
 minio = { module = "io.minio:minio", version.ref = "minio" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
-swagger-codegen-generators = { module = "io.swagger.codegen.v3:swagger-codegen-generators", version.ref = "swaggerCodegenGenerators" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

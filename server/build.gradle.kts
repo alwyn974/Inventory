@@ -57,9 +57,6 @@ dependencies {
     implementation(libs.kotlinx.datetime)
 
     // OpenAPI/Swagger
-    implementation(libs.ktor.server.openapi)
-    implementation(libs.ktor.server.swagger)
-    implementation(libs.swagger.codegen.generators)
     implementation(libs.ktor.openapi)
 
     // Koin
