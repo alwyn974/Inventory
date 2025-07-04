@@ -24,7 +24,7 @@ import re.alwyn974.inventory.service.PasswordService
 import java.util.*
 
 fun Route.authRoutes() {
-    // Injection de dépendances Koin
+    // Koin dependency injection
     val jwtService by inject<JwtService>()
     val passwordService by inject<PasswordService>()
 

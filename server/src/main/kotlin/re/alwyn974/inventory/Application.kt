@@ -126,7 +126,7 @@ fun Application.module() {
         }
         server {
             url = "http://localhost:${config.serverPort}"
-            description = "Serveur de développement"
+            description = "Development server"
         }
         security {
             securityScheme("JWT") {
@@ -144,8 +144,8 @@ fun Application.module() {
         }
 
         get("/docs", {
-            description = "Documentation de l'API"
-            summary = "Accès à la documentation de l'API"
+            description = "API Documentation"
+            summary = "Access to API documentation"
             tags("General")
         }) {
             call.respondText(
