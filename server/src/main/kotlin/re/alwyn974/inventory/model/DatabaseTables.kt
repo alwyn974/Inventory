@@ -31,6 +31,7 @@ object Tags : UUIDTable("tags") {
 
 object Folders : UUIDTable("folders") {
     val name = varchar("name", 100)
+    val fullPath = varchar("full_path", 500) // Chemin complet du dossier
     val description = text("description").nullable()
     val parentFolder = reference("parent_folder", Folders).nullable()
     val createdBy = reference("created_by", Users)
@@ -41,8 +42,7 @@ object Folders : UUIDTable("folders") {
 object Items : UUIDTable("items") {
     val name = varchar("name", 200)
     val description = text("description").nullable()
-    val quantity = integer("quantity").default(0)
-    val minQuantity = integer("min_quantity").default(0)
+    val quantity = integer("quantity").default(0).check { it greaterEq 0 }
     val imageUrl = varchar("image_url", 500).nullable()
     val category = reference("category", Categories).nullable()
     val folder = reference("folder", Folders).nullable()

@@ -3,30 +3,31 @@ package re.alwyn974.inventory.service
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTVerificationException
+import re.alwyn974.inventory.config.AppConfig
 import re.alwyn974.inventory.model.UserRole
 import java.util.*
 
-object JwtService {
-    private const val SECRET = "your-secret-key-change-in-production"
-    const val ISSUER = "inventory-app"
-    private const val VALIDITY_IN_MS = 36_000_00 * 24 * 7 // 1 week
+class JwtService(private val config: AppConfig) {
+    private val validityInMs = 36_000_00 * 24 * 7 // 1 week
 
-    val algorithm: Algorithm? = Algorithm.HMAC256(SECRET)
+    val algorithm: Algorithm = Algorithm.HMAC256(config.jwtSecret)
 
     fun generateToken(userId: String, username: String, role: UserRole): String {
         return JWT.create()
             .withSubject(userId)
-            .withIssuer(ISSUER)
+            .withIssuer(config.jwtIssuer)
+            .withAudience(config.jwtAudience)
             .withClaim("username", username)
             .withClaim("role", role.name)
-            .withExpiresAt(Date(System.currentTimeMillis() + VALIDITY_IN_MS))
+            .withExpiresAt(Date(System.currentTimeMillis() + validityInMs))
             .sign(algorithm)
     }
 
     fun verifyToken(token: String): TokenPayload? {
         return try {
             val verifier = JWT.require(algorithm)
-                .withIssuer(ISSUER)
+                .withIssuer(config.jwtIssuer)
+                .withAudience(config.jwtAudience)
                 .build()
 
             val jwt = verifier.verify(token)

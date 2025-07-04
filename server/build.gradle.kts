@@ -48,17 +48,12 @@ dependencies {
     implementation(libs.exposed.kotlin.datetime)
     implementation(libs.h2)
     implementation(libs.postgresql)
-
     // Connection pooling
     implementation(libs.hikaricp)
 
-    // Password hashing
     implementation(libs.jbcrypt)
-
-    // MinIO
     implementation(libs.minio)
-
-    // UUID
+    implementation(libs.dotenv.kotlin)
     implementation(libs.kotlinx.datetime)
 
     // OpenAPI/Swagger

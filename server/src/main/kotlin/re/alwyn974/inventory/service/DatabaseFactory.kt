@@ -1,23 +1,18 @@
 package re.alwyn974.inventory.service
 
-import com.oracle.graal.compiler.enterprise.phases.CountedStripMiningPhase.db
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import re.alwyn974.inventory.config.AppConfig
 import re.alwyn974.inventory.model.*
-import re.alwyn974.inventory.model.Users.username
 
-object DatabaseFactory {
+class DatabaseFactory(private val config: AppConfig) {
     fun init() {
-        val driverClassName = System.getenv("DATABASE_DRIVER") ?: "org.h2.Driver"
-        val jdbcURL = System.getenv("DATABASE_URL") ?: "jdbc:h2:./inventory;DB_CLOSE_DELAY=-1;MODE=PostgreSQL"
-
-        val database = Database.connect(createHikariDataSource(jdbcURL, driverClassName))
+        val database = Database.connect(createHikariDataSource())
 
         transaction(database) {
-            // Create tables
             SchemaUtils.create(
                 Users,
                 Categories,
@@ -29,17 +24,14 @@ object DatabaseFactory {
                 RolePermissions
             )
 
-            // Insert default permissions
             initializePermissions()
-
-            // Create default admin user
             createDefaultAdmin()
         }
     }
 
-    private fun createHikariDataSource(url: String, driver: String) = HikariDataSource(HikariConfig().apply {
-        driverClassName = driver
-        jdbcUrl = url
+    private fun createHikariDataSource() = HikariDataSource(HikariConfig().apply {
+        driverClassName = config.databaseDriver
+        jdbcUrl = config.databaseUrl
         maximumPoolSize = 3
         isAutoCommit = false
         transactionIsolation = "TRANSACTION_REPEATABLE_READ"
@@ -79,7 +71,6 @@ object DatabaseFactory {
             }
         }
 
-        // Set up role permissions
         setupRolePermissions()
     }
 
@@ -93,10 +84,8 @@ object DatabaseFactory {
         }.map { it[Permissions.id] }
         val viewerPermissions = Permissions.selectAll().where { Permissions.name like "%.read" }.map { it[Permissions.id] }
 
-        // Clear existing role permissions
         RolePermissions.deleteAll()
 
-        // Set ADMIN permissions
         adminPermissions.forEach { permissionId ->
             RolePermissions.insert {
                 it[role] = UserRole.ADMIN
@@ -104,7 +93,6 @@ object DatabaseFactory {
             }
         }
 
-        // Set MANAGER permissions
         managerPermissions.forEach { permissionId ->
             RolePermissions.insert {
                 it[role] = UserRole.MANAGER
@@ -112,7 +100,6 @@ object DatabaseFactory {
             }
         }
 
-        // Set USER permissions
         userPermissions.forEach { permissionId ->
             RolePermissions.insert {
                 it[role] = UserRole.USER
@@ -120,7 +107,6 @@ object DatabaseFactory {
             }
         }
 
-        // Set VIEWER permissions
         viewerPermissions.forEach { permissionId ->
             RolePermissions.insert {
                 it[role] = UserRole.VIEWER

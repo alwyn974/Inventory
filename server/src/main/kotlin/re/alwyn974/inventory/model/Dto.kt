@@ -85,6 +85,7 @@ data class CreateTagRequest(
 data class FolderDto(
     val id: String,
     val name: String,
+    val fullPath: String, // Nouveau champ pour le chemin complet
     val description: String?,
     val parentFolderId: String?,
     val createdBy: String,
@@ -95,6 +96,7 @@ data class FolderDto(
 @Serializable
 data class CreateFolderRequest(
     val name: String,
+    val fullPath: String, // Nouveau champ pour le chemin complet
     val description: String?,
     val parentFolderId: String?
 )
@@ -102,6 +104,7 @@ data class CreateFolderRequest(
 @Serializable
 data class UpdateFolderRequest(
     val name: String? = null,
+    val fullPath: String? = null, // Nouveau champ pour le chemin complet
     val description: String? = null,
     val parentFolderId: String? = null
 )
@@ -112,7 +115,6 @@ data class ItemDto(
     val name: String,
     val description: String?,
     val quantity: Int,
-    val minQuantity: Int,
     val imageUrl: String?,
     val category: CategoryDto?,
     val folder: FolderDto?,
@@ -127,7 +129,6 @@ data class CreateItemRequest(
     val name: String,
     val description: String?,
     val quantity: Int = 0,
-    val minQuantity: Int = 0,
     val categoryId: String?,
     val folderId: String?,
     val tagIds: List<String> = emptyList()
@@ -138,7 +139,6 @@ data class UpdateItemRequest(
     val name: String? = null,
     val description: String? = null,
     val quantity: Int? = null,
-    val minQuantity: Int? = null,
     val categoryId: String? = null,
     val folderId: String? = null,
     val tagIds: List<String>? = null

@@ -19,6 +19,11 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
+import org.koin.ktor.ext.inject
+import org.koin.ktor.plugin.Koin
+import org.koin.logger.slf4jLogger
+import re.alwyn974.inventory.config.AppConfig
+import re.alwyn974.inventory.config.appModule
 import re.alwyn974.inventory.model.ErrorResponse
 import re.alwyn974.inventory.routes.*
 import re.alwyn974.inventory.service.DatabaseFactory
@@ -26,20 +31,25 @@ import re.alwyn974.inventory.service.JwtService
 import re.alwyn974.inventory.service.MinioService
 
 fun main() {
-    embeddedServer(Netty, port = SERVER_PORT, host = "0.0.0.0", module = Application::module).start(wait = true)
+    val config = AppConfig
+    embeddedServer(Netty, port = config.serverPort, host = config.serverHost, module = Application::module).start(wait = true)
 }
 
 fun Application.module() {
-    // Initialize database
-    DatabaseFactory.init()
+    // Install Koin for dependency injection
+    install(Koin) {
+        slf4jLogger()
+        modules(appModule)
+    }
 
-    // Initialize MinIO service
-    val minioService = MinioService(
-        endpoint = System.getenv("MINIO_ENDPOINT") ?: "http://localhost:9000",
-        accessKey = System.getenv("MINIO_ACCESS_KEY") ?: "minioadmin",
-        secretKey = System.getenv("MINIO_SECRET_KEY") ?: "minioadmin",
-        bucketName = System.getenv("MINIO_BUCKET_NAME") ?: "inventory-images"
-    )
+    // Get services from Koin
+    val databaseFactory: DatabaseFactory by inject()
+    val jwtService: JwtService by inject()
+    val minioService: MinioService by inject()
+    val config: AppConfig by inject()
+
+    // Initialize database
+    databaseFactory.init()
 
     // Install plugins
     install(ContentNegotiation) {
@@ -88,8 +98,8 @@ fun Application.module() {
 
     install(Authentication) {
         jwt("jwt") {
-            realm = "Inventory Application"
-            verifier(JWT.require(JwtService.algorithm).withIssuer(JwtService.ISSUER).build())
+            realm = config.jwtRealm
+            verifier(JWT.require(jwtService.algorithm).withIssuer(config.jwtIssuer).withAudience(config.jwtAudience).build())
             validate { credential ->
                 val userId = credential.payload.subject
                 val username = credential.payload.getClaim("username").asString()
@@ -111,7 +121,7 @@ fun Application.module() {
             description = "API for managing inventory items, categories, tags, and folders."
         }
         server {
-            url = "http://localhost:$SERVER_PORT"
+            url = "http://localhost:${config.serverPort}"
             description = "Serveur de développement"
         }
         security {
