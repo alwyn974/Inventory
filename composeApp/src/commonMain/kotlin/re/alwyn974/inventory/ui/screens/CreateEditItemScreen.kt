@@ -63,10 +63,7 @@ fun CreateEditItemScreen(
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
@@ -237,9 +234,7 @@ fun CategoryDropdown(
             onValueChange = { },
             readOnly = true,
             label = { Text("Catégorie") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(),
+            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled),
             enabled = enabled,
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
@@ -289,9 +284,7 @@ fun FolderDropdown(
             onValueChange = { },
             readOnly = true,
             label = { Text("Dossier") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .menuAnchor(),
+            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled),
             enabled = enabled,
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
