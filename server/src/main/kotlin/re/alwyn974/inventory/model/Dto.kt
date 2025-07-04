@@ -173,6 +173,5 @@ data class ApiInfoResponse(
 @Serializable
 data class DocumentationLinks(
     val scalar: String,
-    val swagger: String,
     val openapi: String
 )

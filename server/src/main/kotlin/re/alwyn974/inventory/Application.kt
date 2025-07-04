@@ -5,6 +5,8 @@ import io.github.smiley4.ktoropenapi.OpenApi
 import io.github.smiley4.ktoropenapi.config.AuthScheme
 import io.github.smiley4.ktoropenapi.config.AuthType
 import io.github.smiley4.ktoropenapi.openApi
+import io.github.smiley4.ktoropenapi.route
+import io.github.smiley4.ktoropenapi.get
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -141,28 +143,38 @@ fun Application.module() {
             openApi()
         }
 
-        // Scalar UI (interface moderne)
-        get("/docs") {
+        get("/docs", {
+            description = "Documentation de l'API"
+            summary = "Accès à la documentation de l'API"
+            tags("General")
+        }) {
             call.respondText(
                 this::class.java.classLoader.getResource("scalar.html")?.readText() ?: "Documentation not found",
                 ContentType.Text.Html
             )
         }
 
-        get("/") {
+        get("/", {
+            description = "API Info"
+            summary = "Get API information"
+            tags("General")
+        }) {
             call.respond(ApiInfoResponse(
                 message = "Inventory API",
                 version = "1.0.0",
                 status = "running",
                 documentation = DocumentationLinks(
                     scalar = "/docs",
-                    swagger = "/swagger",
                     openapi = "/openapi.json"
                 )
             ))
         }
 
-        get("/health") {
+        get("/health", {
+            description = "Health check endpoint"
+            summary = "Check if the server is healthy"
+            tags("General")
+        }) {
             call.respond(mapOf("status" to "healthy"))
         }
 

@@ -1,5 +1,10 @@
 package re.alwyn974.inventory.routes
 
+import io.github.smiley4.ktoropenapi.route
+import io.github.smiley4.ktoropenapi.post
+import io.github.smiley4.ktoropenapi.get
+import io.github.smiley4.ktoropenapi.put
+import io.github.smiley4.ktoropenapi.delete
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
@@ -24,7 +29,32 @@ fun Route.authRoutes() {
     val passwordService by inject<PasswordService>()
 
     route("/auth") {
-        post("/login") {
+        post("/login", {
+            tags = listOf("Authentication")
+            summary = "User login"
+            description = "Authenticate user and get JWT token"
+            request {
+                body<LoginRequest> {
+                    example("default") {
+                        value = LoginRequest("admin", "admin123")
+                    }
+                }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Login successful"
+                    body<LoginResponse>()
+                }
+                HttpStatusCode.Unauthorized to {
+                    description = "Invalid credentials"
+                    body<ErrorResponse>()
+                }
+                HttpStatusCode.Forbidden to {
+                    description = "Account disabled"
+                    body<ErrorResponse>()
+                }
+            }
+        }) {
             val loginRequest = call.receive<LoginRequest>()
 
             val user = transaction {
@@ -61,7 +91,26 @@ fun Route.authRoutes() {
         }
 
         authenticate("jwt") {
-            get("/me") {
+            get("/me", {
+                tags = listOf("Authentication")
+                summary = "Get current user"
+                description = "Get information about the currently authenticated user"
+                securitySchemeNames = listOf("JWT")
+                response {
+                    HttpStatusCode.OK to {
+                        description = "User information"
+                        body<UserDto>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "User not found"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal?.subject ?: return@get call.respond(HttpStatusCode.Unauthorized)
 
@@ -93,7 +142,26 @@ fun Route.authRoutes() {
 fun Route.userRoutes() {
     authenticate("jwt") {
         route("/users") {
-            get {
+            get({
+                tags = listOf("Users")
+                summary = "List all users"
+                description = "Get a list of all users in the system"
+                securitySchemeNames = listOf("JWT")
+                response {
+                    HttpStatusCode.OK to {
+                        description = "List of users"
+                        body<List<UserDto>>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 call.requirePermission("user.read")
 
                 val users = transaction {
@@ -113,7 +181,37 @@ fun Route.userRoutes() {
                 call.respond(users)
             }
 
-            post {
+            post({
+                tags = listOf("Users")
+                summary = "Create new user"
+                description = "Create a new user account"
+                securitySchemeNames = listOf("JWT")
+                request {
+                    body<CreateUserRequest> {
+                        example("admin") {
+                            value = CreateUserRequest("newuser", "user@example.com", "password123", UserRole.USER)
+                        }
+                    }
+                }
+                response {
+                    HttpStatusCode.Created to {
+                        description = "User created successfully"
+                        body<SuccessResponse>()
+                    }
+                    HttpStatusCode.Conflict to {
+                        description = "Username or email already exists"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 call.requirePermission("user.create")
 
                 val createRequest = call.receive<CreateUserRequest>()
@@ -140,7 +238,30 @@ fun Route.userRoutes() {
                 call.respond(HttpStatusCode.Created, SuccessResponse("User created successfully"))
             }
 
-            get("/{id}") {
+            get("/{id}", {
+                tags = listOf("Users")
+                summary = "Get user by ID"
+                description = "Get a specific user by their ID"
+                securitySchemeNames = listOf("JWT")
+                response {
+                    HttpStatusCode.OK to {
+                        description = "User information"
+                        body<UserDto>()
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "User not found"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 call.requirePermission("user.read")
 
                 val userId = call.parameters["id"] ?: return@get call.respond(HttpStatusCode.BadRequest)
@@ -168,7 +289,37 @@ fun Route.userRoutes() {
                 call.respond(userDto)
             }
 
-            put("/{id}") {
+            put("/{id}", {
+                tags = listOf("Users")
+                summary = "Update user"
+                description = "Update an existing user"
+                securitySchemeNames = listOf("JWT")
+                request {
+                    body<UpdateUserRequest> {
+                        example("update") {
+                            value = UpdateUserRequest(username = "updateduser", email = "updated@example.com")
+                        }
+                    }
+                }
+                response {
+                    HttpStatusCode.OK to {
+                        description = "User updated successfully"
+                        body<SuccessResponse>()
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "User not found"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 call.requirePermission("user.update")
 
                 val userId = call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest)
@@ -192,7 +343,30 @@ fun Route.userRoutes() {
                 }
             }
 
-            delete("/{id}") {
+            delete("/{id}", {
+                tags = listOf("Users")
+                summary = "Delete user"
+                description = "Delete a user from the system"
+                securitySchemeNames = listOf("JWT")
+                response {
+                    HttpStatusCode.OK to {
+                        description = "User deleted successfully"
+                        body<SuccessResponse>()
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "User not found"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 call.requirePermission("user.delete")
 
                 val userId = call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest)

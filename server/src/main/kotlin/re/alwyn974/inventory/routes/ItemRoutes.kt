@@ -1,5 +1,10 @@
 package re.alwyn974.inventory.routes
 
+import io.github.smiley4.ktoropenapi.route
+import io.github.smiley4.ktoropenapi.get
+import io.github.smiley4.ktoropenapi.post
+import io.github.smiley4.ktoropenapi.put
+import io.github.smiley4.ktoropenapi.delete
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -20,27 +25,186 @@ import java.util.*
 fun Route.itemRoutes(minioService: MinioService) {
     authenticate("jwt") {
         route("/items") {
-            get {
+            get({
+                tags = listOf("Items")
+                summary = "List all items"
+                description = "Get a list of all inventory items"
+                securitySchemeNames = listOf("JWT")
+                response {
+                    HttpStatusCode.OK to {
+                        description = "List of items"
+                        body<List<ItemDto>>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 getAllItems(call)
             }
 
-            post {
+            post({
+                tags = listOf("Items")
+                summary = "Create new item"
+                description = "Create a new inventory item"
+                securitySchemeNames = listOf("JWT")
+                request {
+                    body<CreateItemRequest> {
+                        example("example") {
+                            value = CreateItemRequest(
+                                name = "Laptop Dell XPS 13",
+                                description = "High-performance laptop for development",
+                                quantity = 5,
+                                categoryId = null,
+                                folderId = null,
+                                tagIds = emptyList()
+                            )
+                        }
+                    }
+                }
+                response {
+                    HttpStatusCode.Created to {
+                        description = "Item created successfully"
+                        body<Map<String, String>>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 createItem(call)
             }
 
-            get("/{id}") {
+            get("/{id}", {
+                tags = listOf("Items")
+                summary = "Get item by ID"
+                description = "Get a specific inventory item by its ID"
+                securitySchemeNames = listOf("JWT")
+                response {
+                    HttpStatusCode.OK to {
+                        description = "Item information"
+                        body<ItemDto>()
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "Item not found"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 getItemById(call)
             }
 
-            put("/{id}") {
+            put("/{id}", {
+                tags = listOf("Items")
+                summary = "Update item"
+                description = "Update an existing inventory item"
+                securitySchemeNames = listOf("JWT")
+                request {
+                    body<UpdateItemRequest> {
+                        example("update") {
+                            value = UpdateItemRequest(
+                                name = "Updated Laptop Dell XPS 13",
+                                description = "Updated high-performance laptop",
+                                quantity = 3
+                            )
+                        }
+                    }
+                }
+                response {
+                    HttpStatusCode.OK to {
+                        description = "Item updated successfully"
+                        body<SuccessResponse>()
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "Item not found"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 updateItem(call)
             }
 
-            delete("/{id}") {
+            delete("/{id}", {
+                tags = listOf("Items")
+                summary = "Delete item"
+                description = "Delete an inventory item"
+                securitySchemeNames = listOf("JWT")
+                response {
+                    HttpStatusCode.OK to {
+                        description = "Item deleted successfully"
+                        body<SuccessResponse>()
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "Item not found"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 deleteItem(call, minioService)
             }
 
-            post("/{id}/image") {
+            post("/{id}/image", {
+                tags = listOf("Items")
+                summary = "Upload item image"
+                description = "Upload an image for an inventory item"
+                securitySchemeNames = listOf("JWT")
+                response {
+                    HttpStatusCode.OK to {
+                        description = "Image uploaded successfully"
+                        body<Map<String, String>>()
+                    }
+                    HttpStatusCode.BadRequest to {
+                        description = "Invalid file type or no image provided"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.NotFound to {
+                        description = "Item not found"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Unauthorized to {
+                        description = "Authentication required"
+                        body<ErrorResponse>()
+                    }
+                    HttpStatusCode.Forbidden to {
+                        description = "Insufficient permissions"
+                        body<ErrorResponse>()
+                    }
+                }
+            }) {
                 uploadItemImage(call, minioService)
             }
         }
