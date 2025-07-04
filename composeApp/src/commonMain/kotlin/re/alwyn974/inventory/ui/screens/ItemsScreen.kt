@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
@@ -55,7 +56,7 @@ fun ItemsScreen(
                 title = { Text("Inventaire") },
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.ExitToApp, contentDescription = "Menu")
+                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Menu")
                     }
                     DropdownMenu(
                         expanded = showMenu,
@@ -82,7 +83,7 @@ fun ItemsScreen(
                                 onManageFolders()
                             }
                         )
-                        Divider()
+                        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                         DropdownMenuItem(
                             text = { Text("Déconnexion") },
                             onClick = {

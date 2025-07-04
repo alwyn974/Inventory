@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -54,7 +55,7 @@ fun ManageFoldersScreen(
                 title = { Text("Gérer les dossiers") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
                     }
                 }
             )
@@ -332,8 +333,8 @@ fun CreateEditFolderDialog(
                         onValueChange = { },
                         readOnly = true,
                         label = { Text("Dossier parent") },
-                        modifier = Modifier.menuAnchor(),
                         enabled = !isLoading,
+                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = showParentDropdown)
                         }
