@@ -71,7 +71,6 @@ private suspend fun createItem(call: ApplicationCall) {
             body[name] = createRequest.name
             body[description] = createRequest.description
             body[quantity] = createRequest.quantity
-            body[minQuantity] = createRequest.minQuantity
             body[category] = createRequest.categoryId?.let { UUID.fromString(it) }
             body[folder] = createRequest.folderId?.let { UUID.fromString(it) }
             body[createdBy] = userId
@@ -120,7 +119,6 @@ private suspend fun updateItem(call: ApplicationCall) {
             updateRequest.name?.let { name -> it[Items.name] = name }
             updateRequest.description?.let { description -> it[Items.description] = description }
             updateRequest.quantity?.let { quantity -> it[Items.quantity] = quantity }
-            updateRequest.minQuantity?.let { minQuantity -> it[Items.minQuantity] = minQuantity }
             updateRequest.categoryId?.let { categoryId -> it[Items.category] = UUID.fromString(categoryId) }
             updateRequest.folderId?.let { folderId -> it[Items.folder] = UUID.fromString(folderId) }
             it[Items.updatedAt] = kotlinx.datetime.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.UTC)
@@ -263,6 +261,7 @@ private fun mapItemRowToDto(itemRow: ResultRow): ItemDto {
                 FolderDto(
                     id = folderRow[Folders.id].toString(),
                     name = folderRow[Folders.name],
+                    fullPath = folderRow[Folders.fullPath], // Ajout du champ fullPath
                     description = folderRow[Folders.description],
                     parentFolderId = folderRow[Folders.parentFolder]?.toString(),
                     createdBy = folderRow[Folders.createdBy].toString(),
@@ -289,7 +288,6 @@ private fun mapItemRowToDto(itemRow: ResultRow): ItemDto {
             name = itemRow[Items.name],
             description = itemRow[Items.description],
             quantity = itemRow[Items.quantity],
-            minQuantity = itemRow[Items.minQuantity],
             imageUrl = itemRow[Items.imageUrl],
             category = category,
             folder = folder,

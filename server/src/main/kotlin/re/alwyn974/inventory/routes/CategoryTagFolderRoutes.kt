@@ -195,6 +195,7 @@ fun Route.folderRoutes() {
                         FolderDto(
                             id = row[Folders.id].toString(),
                             name = row[Folders.name],
+                            fullPath = row[Folders.fullPath], // Ajout du champ fullPath
                             description = row[Folders.description],
                             parentFolderId = row[Folders.parentFolder]?.toString(),
                             createdBy = row[Folders.createdBy].toString(),
@@ -217,6 +218,7 @@ fun Route.folderRoutes() {
                 val folderId = transaction {
                     Folders.insert {
                         it[name] = createRequest.name
+                        it[fullPath] = createRequest.fullPath // Ajout du champ fullPath
                         it[description] = createRequest.description
                         it[parentFolder] = createRequest.parentFolderId?.let { UUID.fromString(it) }
                         it[createdBy] = userId
@@ -243,6 +245,7 @@ fun Route.folderRoutes() {
                 val folderDto = FolderDto(
                     id = folder[Folders.id].toString(),
                     name = folder[Folders.name],
+                    fullPath = folder[Folders.fullPath], // Ajout du champ fullPath
                     description = folder[Folders.description],
                     parentFolderId = folder[Folders.parentFolder]?.toString(),
                     createdBy = folder[Folders.createdBy].toString(),
@@ -262,6 +265,7 @@ fun Route.folderRoutes() {
                 val updated = transaction {
                     Folders.update({ Folders.id eq UUID.fromString(folderId) }) {
                         updateRequest.name?.let { name -> it[Folders.name] = name }
+                        updateRequest.fullPath?.let { fullPath -> it[Folders.fullPath] = fullPath } // Ajout du champ fullPath
                         updateRequest.description?.let { description -> it[Folders.description] = description }
                         updateRequest.parentFolderId?.let { parentId -> it[Folders.parentFolder] = UUID.fromString(parentId) }
                         it[Folders.updatedAt] = kotlinx.datetime.Clock.System.now().toLocalDateTime(kotlinx.datetime.TimeZone.UTC)

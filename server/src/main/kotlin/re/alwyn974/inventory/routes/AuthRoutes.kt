@@ -8,17 +8,21 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.datetime.toLocalDateTime
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.koin.ktor.ext.inject
 import re.alwyn974.inventory.model.*
 import re.alwyn974.inventory.service.JwtService
 import re.alwyn974.inventory.service.PasswordService
 import java.util.*
 
 fun Route.authRoutes() {
+    // Injection de dépendances Koin
+    val jwtService by inject<JwtService>()
+    val passwordService by inject<PasswordService>()
+
     route("/auth") {
         post("/login") {
             val loginRequest = call.receive<LoginRequest>()
@@ -27,7 +31,7 @@ fun Route.authRoutes() {
                 Users.selectAll().where { Users.username eq loginRequest.username }.singleOrNull()
             }
 
-            if (user == null || !PasswordService.verifyPassword(loginRequest.password, user[Users.passwordHash])) {
+            if (user == null || !passwordService.verifyPassword(loginRequest.password, user[Users.passwordHash])) {
                 call.respond(HttpStatusCode.Unauthorized, ErrorResponse("INVALID_CREDENTIALS", "Invalid username or password"))
                 return@post
             }
@@ -37,7 +41,7 @@ fun Route.authRoutes() {
                 return@post
             }
 
-            val token = JwtService.generateToken(
+            val token = jwtService.generateToken(
                 userId = user[Users.id].toString(),
                 username = user[Users.username],
                 role = user[Users.role]
