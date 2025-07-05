@@ -60,17 +60,17 @@ fun CreateEditItemScreen(
             folders = apiClient.getFolders()
             tags = apiClient.getTags()
         } catch (e: Exception) {
-            errorMessage = "Erreur lors du chargement des données: ${e.message}"
+            errorMessage = "Error loading data: ${e.message}"
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (item == null) "Créer un item" else "Modifier l'item") },
+                title = { Text(if (item == null) "Create Item" else "Edit Item") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -80,7 +80,7 @@ fun CreateEditItemScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Section Image
+            // Image Section
             item {
                 ImageUploadSection(
                     currentImageUrl = item?.imageUrl,
@@ -107,7 +107,7 @@ fun CreateEditItemScreen(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nom *") },
+                    label = { Text("Name *") },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
                     singleLine = true,
@@ -135,7 +135,7 @@ fun CreateEditItemScreen(
                             quantity = it
                         }
                     },
-                    label = { Text("Quantité *") },
+                    label = { Text("Quantity *") },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
                     singleLine = true,
@@ -191,20 +191,20 @@ fun CreateEditItemScreen(
                         modifier = Modifier.weight(1f),
                         enabled = !isLoading
                     ) {
-                        Text("Annuler")
+                        Text("Cancel")
                     }
 
                     Button(
                         onClick = {
-                            println("Debug: Bouton cliqué - name='$name', quantity='$quantity'")
+                            println("Debug: Button clicked - name='$name', quantity='$quantity'")
                             if (name.isNotBlank() && quantity.toIntOrNull() != null) {
-                                println("Debug: Validation OK, lancement de la requête")
+                                println("Debug: Validation OK, launching request")
                                 isLoading = true
                                 errorMessage = null
                                 scope.launch {
                                     try {
                                         val itemId = if (item == null) {
-                                            println("Debug: Création d'un nouvel item")
+                                            println("Debug: Creating new item")
                                             val result = apiClient.createItem(
                                                 CreateItemRequest(
                                                     name = name,
@@ -215,10 +215,10 @@ fun CreateEditItemScreen(
                                                     tagIds = selectedTags.map { it.id }
                                                 )
                                             )
-                                            println("Debug: Item créé avec succès: $result")
-                                            result["id"] // Récupérer l'ID de l'item créé
+                                            println("Debug: Item created successfully: $result")
+                                            result["id"] // Get the created item ID
                                         } else {
-                                            println("Debug: Mise à jour de l'item ${item.id}")
+                                            println("Debug: Updating item ${item.id}")
                                             apiClient.updateItem(
                                                 item.id,
                                                 UpdateItemRequest(
@@ -230,11 +230,11 @@ fun CreateEditItemScreen(
                                                     tagIds = selectedTags.map { it.id }
                                                 )
                                             )
-                                            println("Debug: Item mis à jour avec succès")
+                                            println("Debug: Item updated successfully")
                                             item.id
                                         }
 
-                                        // Upload de l'image si une image a été sélectionnée
+                                        // Upload image if an image was selected
                                         if (selectedImage != null && itemId != null) {
                                             try {
                                                 val uploadResult = apiClient.uploadItemImage(
@@ -242,31 +242,31 @@ fun CreateEditItemScreen(
                                                     selectedImage!!,
                                                     "image.jpg"
                                                 )
-                                                println("Debug: Image uploadée avec succès: $uploadResult")
+                                                println("Debug: Image uploaded successfully: $uploadResult")
                                             } catch (e: Exception) {
-                                                println("Debug: Erreur lors de l'upload de l'image: ${e.message}")
-                                                imageUploadError = "Erreur lors de l'upload de l'image: ${e.message}"
+                                                println("Debug: Error uploading image: ${e.message}")
+                                                imageUploadError = "Error uploading image: ${e.message}"
                                             }
                                         }
 
-                                        println("Debug: Appel de onSaved()")
+                                        println("Debug: Calling onSaved()")
                                         onSaved()
                                     } catch (e: Exception) {
-                                        println("Debug: Erreur lors de la sauvegarde: ${e.message}")
+                                        println("Debug: Error saving: ${e.message}")
                                         e.printStackTrace()
-                                        errorMessage = "Erreur lors de la sauvegarde: ${e.message}"
+                                        errorMessage = "Error saving: ${e.message}"
                                     } finally {
                                         isLoading = false
-                                        println("Debug: Fin du processus de sauvegarde")
+                                        println("Debug: End of save process")
                                     }
                                 }
                             } else {
-                                println("Debug: Validation échouée - name='$name' (blank=${name.isBlank()}), quantity='$quantity' (valid=${quantity.toIntOrNull() != null})")
-                                // Afficher un message d'erreur si la validation échoue
+                                println("Debug: Validation failed - name='$name' (blank=${name.isBlank()}), quantity='$quantity' (valid=${quantity.toIntOrNull() != null})")
+                                // Show error message if validation fails
                                 errorMessage = when {
-                                    name.isBlank() -> "Le nom est obligatoire"
-                                    quantity.toIntOrNull() == null -> "La quantité doit être un nombre valide"
-                                    else -> "Veuillez remplir tous les champs obligatoires"
+                                    name.isBlank() -> "Name is required"
+                                    quantity.toIntOrNull() == null -> "Quantity must be a valid number"
+                                    else -> "Please fill in all required fields"
                                 }
                             }
                         },
@@ -279,7 +279,7 @@ fun CreateEditItemScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text("Enregistrer")
+                            Text("Save")
                         }
                     }
                 }
@@ -303,10 +303,10 @@ fun CategoryDropdown(
         onExpandedChange = { expanded = !expanded && enabled }
     ) {
         OutlinedTextField(
-            value = selectedCategory?.name ?: "Aucune catégorie",
+            value = selectedCategory?.name ?: "No category",
             onValueChange = { },
             readOnly = true,
-            label = { Text("Catégorie") },
+            label = { Text("Category") },
             modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
             enabled = enabled,
             trailingIcon = {
@@ -319,7 +319,7 @@ fun CategoryDropdown(
             onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(
-                text = { Text("Aucune catégorie") },
+                text = { Text("No category") },
                 onClick = {
                     onCategorySelected(null)
                     expanded = false
@@ -353,10 +353,10 @@ fun FolderDropdown(
         onExpandedChange = { expanded = !expanded && enabled }
     ) {
         OutlinedTextField(
-            value = selectedFolder?.name ?: "Aucun dossier",
+            value = selectedFolder?.name ?: "No folder",
             onValueChange = { },
             readOnly = true,
-            label = { Text("Dossier") },
+            label = { Text("Folder") },
             modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
             enabled = enabled,
             trailingIcon = {
@@ -369,7 +369,7 @@ fun FolderDropdown(
             onDismissRequest = { expanded = false }
         ) {
             DropdownMenuItem(
-                text = { Text("Aucun dossier") },
+                text = { Text("No folder") },
                 onClick = {
                     onFolderSelected(null)
                     expanded = false
@@ -452,14 +452,14 @@ fun ImageUploadSection(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Image de l'item",
+                text = "Item Image",
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Affichage de l'image actuelle ou sélectionnée
+            // Display current or selected image
             if (selectedImage != null) {
-                // TODO: Afficher l'image sélectionnée (nécessite une implémentation spécifique par plateforme)
+                // TODO: Display selected image (requires platform-specific implementation)
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -477,11 +477,11 @@ fun ImageUploadSection(
                         ) {
                             Icon(
                                 Icons.Default.Image,
-                                contentDescription = "Image sélectionnée",
+                                contentDescription = "Selected image",
                                 modifier = Modifier.size(48.dp)
                             )
                             Text(
-                                text = "Image sélectionnée",
+                                text = "Image selected",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }
@@ -497,21 +497,21 @@ fun ImageUploadSection(
                         onClick = onImageRemoved,
                         enabled = enabled
                     ) {
-                        Text("Supprimer")
+                        Text("Remove")
                     }
 
-                    // TODO: Ajouter le bouton pour changer l'image
+                    // TODO: Add button to change image
                     Button(
-                        onClick = { /* TODO: Ouvrir le sélecteur d'image */ },
+                        onClick = { /* TODO: Open image picker */ },
                         enabled = enabled
                     ) {
-                        Text("Changer")
+                        Text("Change")
                     }
                 }
             } else if (currentImageUrl != null) {
                 AsyncImage(
                     model = currentImageUrl,
-                    contentDescription = "Image actuelle",
+                    contentDescription = "Current image",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
@@ -528,18 +528,18 @@ fun ImageUploadSection(
                         onClick = onImageRemoved,
                         enabled = enabled
                     ) {
-                        Text("Supprimer")
+                        Text("Remove")
                     }
 
                     Button(
-                        onClick = { /* TODO: Ouvrir le sélecteur d'image */ },
+                        onClick = { /* TODO: Open image picker */ },
                         enabled = enabled
                     ) {
-                        Text("Changer")
+                        Text("Change")
                     }
                 }
             } else {
-                // Pas d'image - afficher le bouton d'ajout
+                // No image - show add button
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -558,12 +558,12 @@ fun ImageUploadSection(
                         ) {
                             Icon(
                                 Icons.Default.PhotoCamera,
-                                contentDescription = "Ajouter une image",
+                                contentDescription = "Add image",
                                 modifier = Modifier.size(48.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "Aucune image",
+                                text = "No image",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -574,7 +574,7 @@ fun ImageUploadSection(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { /* TODO: Ouvrir le sélecteur d'image */ },
+                    onClick = { /* TODO: Open image sélecteur */ },
                     enabled = enabled
                 ) {
                     Icon(
@@ -583,7 +583,7 @@ fun ImageUploadSection(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ajouter une image")
+                    Text("Add Image")
                 }
             }
         }

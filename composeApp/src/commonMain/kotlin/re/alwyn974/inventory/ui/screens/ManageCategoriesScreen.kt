@@ -53,10 +53,10 @@ fun ManageCategoriesScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gérer les catégories") },
+                title = { Text("Manage Categories") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -65,7 +65,7 @@ fun ManageCategoriesScreen(
             FloatingActionButton(
                 onClick = { showCreateDialog = true }
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Ajouter une catégorie")
+                Icon(Icons.Default.Add, contentDescription = "Add category")
             }
         }
     ) { paddingValues ->
@@ -86,7 +86,7 @@ fun ManageCategoriesScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Erreur: $errorMessage",
+                            text = "Error: $errorMessage",
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -110,13 +110,13 @@ fun ManageCategoriesScreen(
                                 }
                             }
                         ) {
-                            Text("Réessayer")
+                            Text("Retry")
                         }
                     }
                 }
                 categories.isEmpty() -> {
                     Text(
-                        text = "Aucune catégorie",
+                        text = "No categories",
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -140,7 +140,7 @@ fun ManageCategoriesScreen(
                                                 }
                                             }
                                         } catch (e: Exception) {
-                                            errorMessage = "Erreur lors de la suppression: ${e.message}"
+                                            errorMessage = "Error deleting category: ${e.message}"
                                         }
                                     }
                                 }
@@ -226,10 +226,10 @@ fun CategoryCard(
 
             Row {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Modifier")
+                    Icon(Icons.Default.Edit, contentDescription = "Edit")
                 }
                 IconButton(onClick = { showDeleteDialog = true }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Supprimer")
+                    Icon(Icons.Default.Delete, contentDescription = "Delete")
                 }
             }
         }
@@ -238,8 +238,8 @@ fun CategoryCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Supprimer la catégorie") },
-            text = { Text("Êtes-vous sûr de vouloir supprimer \"${category.name}\" ?") },
+            title = { Text("Delete Category") },
+            text = { Text("Are you sure you want to delete \"${category.name}\"?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -247,12 +247,12 @@ fun CategoryCard(
                         onDelete()
                     }
                 ) {
-                    Text("Supprimer")
+                    Text("Delete")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Annuler")
+                    Text("Cancel")
                 }
             }
         )
@@ -275,7 +275,7 @@ fun CreateEditCategoryDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (category == null) "Créer une catégorie" else "Modifier la catégorie") },
+        title = { Text(if (category == null) "Create Category" else "Edit Category") },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -283,7 +283,7 @@ fun CreateEditCategoryDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nom *") },
+                    label = { Text("Name *") },
                     enabled = !isLoading,
                     singleLine = true,
                     isError = name.isBlank()
@@ -333,14 +333,16 @@ fun CreateEditCategoryDialog(
                                 }
                                 onSaved()
                             } catch (e: Exception) {
-                                errorMessage = "Erreur: ${e.message}"
+                                errorMessage = "Error saving category: ${e.message}"
                             } finally {
                                 isLoading = false
                             }
                         }
+                    } else {
+                        errorMessage = "Name is required"
                     }
                 },
-                enabled = !isLoading && name.isNotBlank()
+                enabled = !isLoading
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -348,16 +350,13 @@ fun CreateEditCategoryDialog(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("Enregistrer")
+                    Text("Save")
                 }
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !isLoading
-            ) {
-                Text("Annuler")
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
             }
         }
     )
@@ -371,7 +370,7 @@ suspend fun loadCategories(
         val categories = apiClient.getCategories()
         onResult(Result.Success(categories))
     } catch (e: Exception) {
-        onResult(Result.Error(e.message ?: "Erreur inconnue"))
+        onResult(Result.Error(e.message ?: "Unknown error"))
     }
 }
 

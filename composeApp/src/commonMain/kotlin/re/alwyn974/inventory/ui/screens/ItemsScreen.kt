@@ -59,7 +59,7 @@ fun ItemsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Inventaire") },
+                title = { Text("Inventory") },
                 actions = {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Menu")
@@ -69,21 +69,21 @@ fun ItemsScreen(
                         onDismissRequest = { showMenu = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Gérer les catégories") },
+                            text = { Text("Manage Categories") },
                             onClick = {
                                 showMenu = false
                                 onManageCategories()
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Gérer les tags") },
+                            text = { Text("Manage Tags") },
                             onClick = {
                                 showMenu = false
                                 onManageTags()
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Gérer les dossiers") },
+                            text = { Text("Manage Folders") },
                             onClick = {
                                 showMenu = false
                                 onManageFolders()
@@ -91,7 +91,7 @@ fun ItemsScreen(
                         )
                         HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                         DropdownMenuItem(
-                            text = { Text("Déconnexion") },
+                            text = { Text("Logout") },
                             onClick = {
                                 showMenu = false
                                 onLogout()
@@ -105,7 +105,7 @@ fun ItemsScreen(
             FloatingActionButton(
                 onClick = onCreateItem
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Ajouter un item")
+                Icon(Icons.Default.Add, contentDescription = "Add item")
             }
         }
     ) { paddingValues ->
@@ -126,7 +126,7 @@ fun ItemsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Erreur: $errorMessage",
+                            text = "Error: $errorMessage",
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -148,7 +148,7 @@ fun ItemsScreen(
                                 }
                             }
                         ) {
-                            Text("Réessayer")
+                            Text("Retry")
                         }
                     }
                 }
@@ -158,12 +158,12 @@ fun ItemsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Aucun item trouvé",
+                            text = "No items found",
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = onCreateItem) {
-                            Text("Créer votre premier item")
+                            Text("Create your first item")
                         }
                     }
                 }
@@ -190,7 +190,7 @@ fun ItemsScreen(
                                                 }
                                             )
                                         } catch (e: Exception) {
-                                            errorMessage = "Erreur lors de la suppression: ${e.message}"
+                                            errorMessage = "Error deleting item: ${e.message}"
                                         }
                                     }
                                 }
@@ -223,12 +223,14 @@ fun ItemCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                // Image à gauche si disponible
+                // Image on the left if available
                 item.imageUrl?.let { imageUrl ->
                     AsyncImage(
                         model = imageUrl,
-                        contentDescription = "Image de ${item.name}",
-                        modifier = Modifier.size(80.dp).clip(RoundedCornerShape(8.dp)),
+                        contentDescription = "Image of ${item.name}",
+                        modifier = Modifier
+                            .size(80.dp)
+                            .clip(RoundedCornerShape(8.dp)),
                         contentScale = ContentScale.Crop
                     )
                     Spacer(modifier = Modifier.width(12.dp))
@@ -250,7 +252,7 @@ fun ItemCard(
                     }
 
                     Text(
-                        text = "Quantité: ${item.quantity}",
+                        text = "Quantity: ${item.quantity}",
                         style = MaterialTheme.typography.bodyLarge,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(top = 8.dp)
@@ -258,7 +260,7 @@ fun ItemCard(
 
                     item.category?.let { category ->
                         Text(
-                            text = "Catégorie: ${category.name}",
+                            text = "Category: ${category.name}",
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(top = 4.dp)
                         )
@@ -266,7 +268,7 @@ fun ItemCard(
 
                     item.folder?.let { folder ->
                         Text(
-                            text = "Dossier: ${folder.name}",
+                            text = "Folder: ${folder.name}",
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(top = 4.dp)
                         )
@@ -289,15 +291,15 @@ fun ItemCard(
 
                 Row {
                     IconButton(onClick = onEdit) {
-                        Icon(Icons.Default.Edit, contentDescription = "Modifier")
+                        Icon(Icons.Default.Edit, contentDescription = "Edit")
                     }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Supprimer")
+                        Icon(Icons.Default.Delete, contentDescription = "Delete")
                     }
                 }
             }
 
-            // Placeholder pour les items sans image
+            // Placeholder for items without image
             if (item.imageUrl == null) {
                 Card(
                     modifier = Modifier
@@ -317,12 +319,12 @@ fun ItemCard(
                         ) {
                             Icon(
                                 Icons.Default.Image,
-                                contentDescription = "Pas d'image",
+                                contentDescription = "No image",
                                 modifier = Modifier.size(32.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "Pas d'image",
+                                text = "No image",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -336,8 +338,8 @@ fun ItemCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Supprimer l'item") },
-            text = { Text("Êtes-vous sûr de vouloir supprimer \"${item.name}\" ?") },
+            title = { Text("Delete Item") },
+            text = { Text("Are you sure you want to delete \"${item.name}\"?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -345,12 +347,12 @@ fun ItemCard(
                         onDelete()
                     }
                 ) {
-                    Text("Supprimer")
+                    Text("Delete")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Annuler")
+                    Text("Cancel")
                 }
             }
         )
@@ -366,6 +368,6 @@ suspend fun loadItems(
         val items = apiClient.getItems()
         onSuccess(items)
     } catch (e: Exception) {
-        onError(e.message ?: "Erreur inconnue")
+        onError(e.message ?: "Unknown error")
     }
 }

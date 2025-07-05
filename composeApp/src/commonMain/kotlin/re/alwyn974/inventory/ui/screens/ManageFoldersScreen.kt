@@ -21,7 +21,6 @@ import re.alwyn974.inventory.network.ApiClient
 import re.alwyn974.inventory.shared.model.CreateFolderRequest
 import re.alwyn974.inventory.shared.model.FolderDto
 import re.alwyn974.inventory.shared.model.UpdateFolderRequest
-import kotlin.collections.find
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,10 +54,10 @@ fun ManageFoldersScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gérer les dossiers") },
+                title = { Text("Manage Folders") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -67,7 +66,7 @@ fun ManageFoldersScreen(
             FloatingActionButton(
                 onClick = { showCreateDialog = true }
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Ajouter un dossier")
+                Icon(Icons.Default.Add, contentDescription = "Add folder")
             }
         }
     ) { paddingValues ->
@@ -88,7 +87,7 @@ fun ManageFoldersScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Erreur: $errorMessage",
+                            text = "Error: $errorMessage",
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -112,13 +111,13 @@ fun ManageFoldersScreen(
                                 }
                             }
                         ) {
-                            Text("Réessayer")
+                            Text("Retry")
                         }
                     }
                 }
                 folders.isEmpty() -> {
                     Text(
-                        text = "Aucun dossier",
+                        text = "No folders",
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -142,7 +141,7 @@ fun ManageFoldersScreen(
                                                 }
                                             }
                                         } catch (e: Exception) {
-                                            errorMessage = "Erreur lors de la suppression: ${e.message}"
+                                            errorMessage = "Error deleting folder: ${e.message}"
                                         }
                                     }
                                 }
@@ -158,7 +157,6 @@ fun ManageFoldersScreen(
         CreateEditFolderDialog(
             apiClient = apiClient,
             folder = null,
-            availableFolders = folders,
             onDismiss = { showCreateDialog = false },
             onSaved = {
                 showCreateDialog = false
@@ -177,7 +175,6 @@ fun ManageFoldersScreen(
         CreateEditFolderDialog(
             apiClient = apiClient,
             folder = folder,
-            availableFolders = folders.filter { it.id != folder.id },
             onDismiss = { editingFolder = null },
             onSaved = {
                 editingFolder = null
@@ -210,38 +207,34 @@ fun FolderCard(
                 .fillMaxWidth()
                 .padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Row(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Default.FolderOpen,
-                    contentDescription = "Dossier",
-                    modifier = Modifier.size(32.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                    Icons.Default.FolderOpen,
+                    contentDescription = "Folder",
+                    modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
-
                 Column {
                     Text(
                         text = folder.name,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
-
                     Text(
                         text = folder.fullPath,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 4.dp)
+                        modifier = Modifier.padding(top = 2.dp)
                     )
-
                     folder.description?.let { description ->
                         Text(
                             text = description,
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(top = 4.dp)
                         )
                     }
@@ -250,10 +243,10 @@ fun FolderCard(
 
             Row {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Modifier")
+                    Icon(Icons.Default.Edit, contentDescription = "Edit")
                 }
                 IconButton(onClick = { showDeleteDialog = true }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Supprimer")
+                    Icon(Icons.Default.Delete, contentDescription = "Delete")
                 }
             }
         }
@@ -262,8 +255,8 @@ fun FolderCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Supprimer le dossier") },
-            text = { Text("Êtes-vous sûr de vouloir supprimer \"${folder.name}\" ?") },
+            title = { Text("Delete Folder") },
+            text = { Text("Are you sure you want to delete \"${folder.name}\"?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -271,40 +264,36 @@ fun FolderCard(
                         onDelete()
                     }
                 ) {
-                    Text("Supprimer")
+                    Text("Delete")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Annuler")
+                    Text("Cancel")
                 }
             }
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEditFolderDialog(
     apiClient: ApiClient,
     folder: FolderDto?,
-    availableFolders: List<FolderDto>,
     onDismiss: () -> Unit,
     onSaved: () -> Unit
 ) {
     var name by remember { mutableStateOf(folder?.name ?: "") }
-    var description by remember { mutableStateOf(folder?.description ?: "") }
     var fullPath by remember { mutableStateOf(folder?.fullPath ?: "") }
-    var selectedParent by remember { mutableStateOf(availableFolders.find { it.id == folder?.parentFolderId }) }
+    var description by remember { mutableStateOf(folder?.description ?: "") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showParentDropdown by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (folder == null) "Créer un dossier" else "Modifier le dossier") },
+        title = { Text(if (folder == null) "Create Folder" else "Edit Folder") },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -312,7 +301,7 @@ fun CreateEditFolderDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nom *") },
+                    label = { Text("Name *") },
                     enabled = !isLoading,
                     singleLine = true,
                     isError = name.isBlank()
@@ -321,50 +310,12 @@ fun CreateEditFolderDialog(
                 OutlinedTextField(
                     value = fullPath,
                     onValueChange = { fullPath = it },
-                    label = { Text("Chemin complet *") },
+                    label = { Text("Full Path *") },
                     enabled = !isLoading,
                     singleLine = true,
+                    placeholder = { Text("/storage/folder-name") },
                     isError = fullPath.isBlank()
                 )
-
-                ExposedDropdownMenuBox(
-                    expanded = showParentDropdown,
-                    onExpandedChange = { showParentDropdown = !showParentDropdown && !isLoading }
-                ) {
-                    OutlinedTextField(
-                        value = selectedParent?.name ?: "Aucun dossier parent",
-                        onValueChange = { },
-                        readOnly = true,
-                        label = { Text("Dossier parent") },
-                        enabled = !isLoading,
-                        modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable),
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = showParentDropdown)
-                        }
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = showParentDropdown,
-                        onDismissRequest = { showParentDropdown = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Aucun dossier parent") },
-                            onClick = {
-                                selectedParent = null
-                                showParentDropdown = false
-                            }
-                        )
-                        availableFolders.forEach { parentFolder ->
-                            DropdownMenuItem(
-                                text = { Text("${parentFolder.name} (${parentFolder.fullPath})") },
-                                onClick = {
-                                    selectedParent = parentFolder
-                                    showParentDropdown = false
-                                }
-                            )
-                        }
-                    }
-                }
 
                 OutlinedTextField(
                     value = description,
@@ -396,9 +347,8 @@ fun CreateEditFolderDialog(
                                     apiClient.createFolder(
                                         CreateFolderRequest(
                                             name = name,
-                                            description = description.ifBlank { null },
                                             fullPath = fullPath,
-                                            parentFolderId = selectedParent?.id
+                                            description = description.ifBlank { null }
                                         )
                                     )
                                 } else {
@@ -406,22 +356,27 @@ fun CreateEditFolderDialog(
                                         folder.id,
                                         UpdateFolderRequest(
                                             name = name,
-                                            description = description.ifBlank { null },
                                             fullPath = fullPath,
-                                            parentFolderId = selectedParent?.id
+                                            description = description.ifBlank { null }
                                         )
                                     )
                                 }
                                 onSaved()
                             } catch (e: Exception) {
-                                errorMessage = "Erreur: ${e.message}"
+                                errorMessage = "Error saving folder: ${e.message}"
                             } finally {
                                 isLoading = false
                             }
                         }
+                    } else {
+                        errorMessage = when {
+                            name.isBlank() -> "Name is required"
+                            fullPath.isBlank() -> "Full path is required"
+                            else -> "Please fill in all required fields"
+                        }
                     }
                 },
-                enabled = !isLoading && name.isNotBlank() && fullPath.isNotBlank()
+                enabled = !isLoading
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -429,16 +384,13 @@ fun CreateEditFolderDialog(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("Enregistrer")
+                    Text("Save")
                 }
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !isLoading
-            ) {
-                Text("Annuler")
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
             }
         }
     )
@@ -452,6 +404,6 @@ suspend fun loadFolders(
         val folders = apiClient.getFolders()
         onResult(Result.Success(folders))
     } catch (e: Exception) {
-        onResult(Result.Error(e.message ?: "Erreur inconnue"))
+        onResult(Result.Error(e.message ?: "Unknown error"))
     }
 }

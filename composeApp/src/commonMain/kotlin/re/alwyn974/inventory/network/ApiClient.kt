@@ -27,7 +27,7 @@ class ApiClient {
             level = LogLevel.ALL
         }
         install(DefaultRequest) {
-            url("http://localhost:8080/api/v1/")
+            url("http://192.168.1.13:8080/api/v1/")
             contentType(ContentType.Application.Json)
         }
     }

@@ -56,10 +56,10 @@ fun ManageTagsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gérer les tags") },
+                title = { Text("Manage Tags") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -68,7 +68,7 @@ fun ManageTagsScreen(
             FloatingActionButton(
                 onClick = { showCreateDialog = true }
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Ajouter un tag")
+                Icon(Icons.Default.Add, contentDescription = "Add tag")
             }
         }
     ) { paddingValues ->
@@ -89,7 +89,7 @@ fun ManageTagsScreen(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Erreur: $errorMessage",
+                            text = "Error: $errorMessage",
                             color = MaterialTheme.colorScheme.error
                         )
                         Spacer(modifier = Modifier.height(16.dp))
@@ -113,13 +113,13 @@ fun ManageTagsScreen(
                                 }
                             }
                         ) {
-                            Text("Réessayer")
+                            Text("Retry")
                         }
                     }
                 }
                 tags.isEmpty() -> {
                     Text(
-                        text = "Aucun tag",
+                        text = "No tags",
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -143,7 +143,7 @@ fun ManageTagsScreen(
                                                 }
                                             }
                                         } catch (e: Exception) {
-                                            errorMessage = "Erreur lors de la suppression: ${e.message}"
+                                            errorMessage = "Error deleting tag: ${e.message}"
                                         }
                                     }
                                 }
@@ -199,6 +199,11 @@ fun TagCard(
     onDelete: () -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    val color = try {
+        ColorUtils.parseColor(tag.color ?: "#808080")
+    } catch (e: Exception) {
+        Color.Gray
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -215,18 +220,12 @@ fun TagCard(
                 modifier = Modifier.weight(1f),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                tag.color?.let { color ->
-                    Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .background(
-                                color = ColorUtils.parseColor(color),
-                                shape = CircleShape
-                            )
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                }
-
+                Box(
+                    modifier = Modifier
+                        .size(16.dp)
+                        .background(color, CircleShape)
+                )
+                Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = tag.name,
                     style = MaterialTheme.typography.headlineSmall,
@@ -236,10 +235,10 @@ fun TagCard(
 
             Row {
                 IconButton(onClick = onEdit) {
-                    Icon(Icons.Default.Edit, contentDescription = "Modifier")
+                    Icon(Icons.Default.Edit, contentDescription = "Edit")
                 }
                 IconButton(onClick = { showDeleteDialog = true }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Supprimer")
+                    Icon(Icons.Default.Delete, contentDescription = "Delete")
                 }
             }
         }
@@ -248,8 +247,8 @@ fun TagCard(
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Supprimer le tag") },
-            text = { Text("Êtes-vous sûr de vouloir supprimer \"${tag.name}\" ?") },
+            title = { Text("Delete Tag") },
+            text = { Text("Are you sure you want to delete \"${tag.name}\"?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -257,12 +256,12 @@ fun TagCard(
                         onDelete()
                     }
                 ) {
-                    Text("Supprimer")
+                    Text("Delete")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Annuler")
+                    Text("Cancel")
                 }
             }
         )
@@ -277,20 +276,15 @@ fun CreateEditTagDialog(
     onSaved: () -> Unit
 ) {
     var name by remember { mutableStateOf(tag?.name ?: "") }
-    var color by remember { mutableStateOf(tag?.color ?: "#007AFF") }
+    var color by remember { mutableStateOf(tag?.color ?: "#FF0000") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
 
-    val colorPresets = listOf(
-        "#007AFF", "#FF3B30", "#34C759", "#FF9500", "#AF52DE",
-        "#FF2D92", "#00C7BE", "#5AC8FA", "#FFCC00", "#FF6B6B"
-    )
-
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (tag == null) "Créer un tag" else "Modifier le tag") },
+        title = { Text(if (tag == null) "Create Tag" else "Edit Tag") },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -298,56 +292,20 @@ fun CreateEditTagDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Nom *") },
+                    label = { Text("Name *") },
                     enabled = !isLoading,
                     singleLine = true,
                     isError = name.isBlank()
                 )
 
-                Text(
-                    text = "Couleur",
-                    style = MaterialTheme.typography.bodyMedium
+                OutlinedTextField(
+                    value = color,
+                    onValueChange = { color = it },
+                    label = { Text("Color (hex)") },
+                    enabled = !isLoading,
+                    singleLine = true,
+                    placeholder = { Text("#FF0000") }
                 )
-
-                LazyColumn(
-                    modifier = Modifier.height(120.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(colorPresets.chunked(5)) { colorRow ->
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            colorRow.forEach { colorHex ->
-                                Box(
-                                    modifier = Modifier
-                                        .size(40.dp)
-                                        .background(
-                                            color = ColorUtils.parseColor(colorHex),
-                                            shape = CircleShape
-                                        )
-                                        .let {
-                                            if (color == colorHex) {
-                                                it.background(
-                                                    color = MaterialTheme.colorScheme.outline,
-                                                    shape = CircleShape
-                                                )
-                                            } else it
-                                        }
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxSize()
-                                            .padding(4.dp)
-                                            .background(
-                                                color = ColorUtils.parseColor(colorHex),
-                                                shape = CircleShape
-                                            )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
 
                 errorMessage?.let { message ->
                     Text(
@@ -370,7 +328,7 @@ fun CreateEditTagDialog(
                                     apiClient.createTag(
                                         CreateTagRequest(
                                             name = name,
-                                            color = color
+                                            color = color.ifBlank { null }
                                         )
                                     )
                                 } else {
@@ -378,20 +336,22 @@ fun CreateEditTagDialog(
                                         tag.id,
                                         CreateTagRequest(
                                             name = name,
-                                            color = color
+                                            color = color.ifBlank { null }
                                         )
                                     )
                                 }
                                 onSaved()
                             } catch (e: Exception) {
-                                errorMessage = "Erreur: ${e.message}"
+                                errorMessage = "Error saving tag: ${e.message}"
                             } finally {
                                 isLoading = false
                             }
                         }
+                    } else {
+                        errorMessage = "Name is required"
                     }
                 },
-                enabled = !isLoading && name.isNotBlank()
+                enabled = !isLoading
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(
@@ -399,16 +359,13 @@ fun CreateEditTagDialog(
                         strokeWidth = 2.dp
                     )
                 } else {
-                    Text("Enregistrer")
+                    Text("Save")
                 }
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                enabled = !isLoading
-            ) {
-                Text("Annuler")
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
             }
         }
     )
@@ -422,6 +379,6 @@ suspend fun loadTags(
         val tags = apiClient.getTags()
         onResult(Result.Success(tags))
     } catch (e: Exception) {
-        onResult(Result.Error(e.message ?: "Erreur inconnue"))
+        onResult(Result.Error(e.message ?: "Unknown error"))
     }
 }

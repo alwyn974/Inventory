@@ -44,7 +44,7 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Connexion",
+                    text = "Login",
                     style = MaterialTheme.typography.headlineMedium,
                     modifier = Modifier.padding(bottom = 24.dp)
                 )
@@ -52,7 +52,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = username,
                     onValueChange = { username = it },
-                    label = { Text("Nom d'utilisateur") },
+                    label = { Text("Username") },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
                     singleLine = true
@@ -63,7 +63,7 @@ fun LoginScreen(
                 OutlinedTextField(
                     value = password,
                     onValueChange = { password = it },
-                    label = { Text("Mot de passe") },
+                    label = { Text("Password") },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading,
                     singleLine = true,
@@ -71,7 +71,7 @@ fun LoginScreen(
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     trailingIcon = {
                         val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                        val description = if (passwordVisible) "Masquer le mot de passe" else "Afficher le mot de passe"
+                        val description = if (passwordVisible) "Hide password" else "Show password"
 
                         IconButton(onClick = { passwordVisible = !passwordVisible }) {
                             Icon(imageVector = image, contentDescription = description)
@@ -92,7 +92,7 @@ fun LoginScreen(
                                     apiClient.setAuthToken(response.token)
                                     onLoginSuccess(response.token)
                                 } catch (e: Exception) {
-                                    errorMessage = "Erreur de connexion: ${e.message}"
+                                    errorMessage = "Login error: ${e.message}"
                                 } finally {
                                     isLoading = false
                                 }
@@ -108,7 +108,7 @@ fun LoginScreen(
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text("Se connecter")
+                        Text("Login")
                     }
                 }
 
