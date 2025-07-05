@@ -67,6 +67,10 @@ kotlin {
             // Material Icons - Extended
             implementation(compose.materialIconsExtended)
 
+            // Image loading with Coil
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor)
+
             // Ktor for HTTP client
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)

@@ -4,15 +4,21 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
 import re.alwyn974.inventory.network.ApiClient
 import re.alwyn974.inventory.shared.model.CategoryDto
@@ -36,6 +42,8 @@ fun CreateEditItemScreen(
     var selectedCategory by remember { mutableStateOf(item?.category) }
     var selectedFolder by remember { mutableStateOf(item?.folder) }
     var selectedTags by remember { mutableStateOf(item?.tags ?: emptyList()) }
+    var selectedImage by remember { mutableStateOf<ByteArray?>(null) }
+    var imageUploadError by remember { mutableStateOf<String?>(null) }
 
     var categories by remember { mutableStateOf<List<CategoryDto>>(emptyList()) }
     var folders by remember { mutableStateOf<List<FolderDto>>(emptyList()) }
@@ -72,6 +80,29 @@ fun CreateEditItemScreen(
             modifier = Modifier.fillMaxSize().padding(paddingValues).padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Section Image
+            item {
+                ImageUploadSection(
+                    currentImageUrl = item?.imageUrl,
+                    selectedImage = selectedImage,
+                    onImageSelected = { imageData ->
+                        selectedImage = imageData
+                        imageUploadError = null
+                    },
+                    onImageRemoved = { selectedImage = null },
+                    enabled = !isLoading
+                )
+
+                imageUploadError?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+            }
+
             item {
                 OutlinedTextField(
                     value = name,
@@ -172,7 +203,7 @@ fun CreateEditItemScreen(
                                 errorMessage = null
                                 scope.launch {
                                     try {
-                                        if (item == null) {
+                                        val itemId = if (item == null) {
                                             println("Debug: Création d'un nouvel item")
                                             val result = apiClient.createItem(
                                                 CreateItemRequest(
@@ -185,6 +216,7 @@ fun CreateEditItemScreen(
                                                 )
                                             )
                                             println("Debug: Item créé avec succès: $result")
+                                            result["id"] // Récupérer l'ID de l'item créé
                                         } else {
                                             println("Debug: Mise à jour de l'item ${item.id}")
                                             apiClient.updateItem(
@@ -199,7 +231,24 @@ fun CreateEditItemScreen(
                                                 )
                                             )
                                             println("Debug: Item mis à jour avec succès")
+                                            item.id
                                         }
+
+                                        // Upload de l'image si une image a été sélectionnée
+                                        if (selectedImage != null && itemId != null) {
+                                            try {
+                                                val uploadResult = apiClient.uploadItemImage(
+                                                    itemId,
+                                                    selectedImage!!,
+                                                    "image.jpg"
+                                                )
+                                                println("Debug: Image uploadée avec succès: $uploadResult")
+                                            } catch (e: Exception) {
+                                                println("Debug: Erreur lors de l'upload de l'image: ${e.message}")
+                                                imageUploadError = "Erreur lors de l'upload de l'image: ${e.message}"
+                                            }
+                                        }
+
                                         println("Debug: Appel de onSaved()")
                                         onSaved()
                                     } catch (e: Exception) {
@@ -378,6 +427,163 @@ fun TagSelector(
                         text = tag.name,
                         style = MaterialTheme.typography.bodyMedium
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ImageUploadSection(
+    currentImageUrl: String?,
+    selectedImage: ByteArray?,
+    onImageSelected: (ByteArray) -> Unit,
+    onImageRemoved: () -> Unit,
+    enabled: Boolean = true
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Image de l'item",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            // Affichage de l'image actuelle ou sélectionnée
+            if (selectedImage != null) {
+                // TODO: Afficher l'image sélectionnée (nécessite une implémentation spécifique par plateforme)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Image,
+                                contentDescription = "Image sélectionnée",
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Text(
+                                text = "Image sélectionnée",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onImageRemoved,
+                        enabled = enabled
+                    ) {
+                        Text("Supprimer")
+                    }
+
+                    // TODO: Ajouter le bouton pour changer l'image
+                    Button(
+                        onClick = { /* TODO: Ouvrir le sélecteur d'image */ },
+                        enabled = enabled
+                    ) {
+                        Text("Changer")
+                    }
+                }
+            } else if (currentImageUrl != null) {
+                AsyncImage(
+                    model = currentImageUrl,
+                    contentDescription = "Image actuelle",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onImageRemoved,
+                        enabled = enabled
+                    ) {
+                        Text("Supprimer")
+                    }
+
+                    Button(
+                        onClick = { /* TODO: Ouvrir le sélecteur d'image */ },
+                        enabled = enabled
+                    ) {
+                        Text("Changer")
+                    }
+                }
+            } else {
+                // Pas d'image - afficher le bouton d'ajout
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    border = CardDefaults.outlinedCardBorder()
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.PhotoCamera,
+                                contentDescription = "Ajouter une image",
+                                modifier = Modifier.size(48.dp),
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Aucune image",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = { /* TODO: Ouvrir le sélecteur d'image */ },
+                    enabled = enabled
+                ) {
+                    Icon(
+                        Icons.Default.PhotoCamera,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Ajouter une image")
                 }
             }
         }

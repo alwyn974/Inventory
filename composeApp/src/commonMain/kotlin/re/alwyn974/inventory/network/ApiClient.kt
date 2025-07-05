@@ -8,6 +8,8 @@ import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.request.forms.*
+import io.ktor.http.content.*
 import kotlinx.serialization.json.Json
 import re.alwyn974.inventory.shared.model.*
 
@@ -85,6 +87,20 @@ class ApiClient {
     suspend fun deleteItem(id: String): SuccessResponse {
         return client.delete("items/$id") {
             addAuthHeader()
+        }.body()
+    }
+
+    suspend fun uploadItemImage(id: String, imageData: ByteArray, fileName: String): Map<String, String> {
+        return client.post("items/$id/image") {
+            addAuthHeader()
+            setBody(MultiPartFormDataContent(
+                formData {
+                    append("image", imageData, Headers.build {
+                        append(HttpHeaders.ContentType, "image/jpeg")
+                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                    })
+                }
+            ))
         }.body()
     }
 
