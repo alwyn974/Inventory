@@ -71,6 +71,10 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.network.ktor)
 
+            // FileKit for image picking
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.compose)
+
             // Ktor for HTTP client
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)

@@ -27,6 +27,9 @@ import re.alwyn974.inventory.shared.model.FolderDto
 import re.alwyn974.inventory.shared.model.ItemDto
 import re.alwyn974.inventory.shared.model.TagDto
 import re.alwyn974.inventory.shared.model.UpdateItemRequest
+import io.github.vinceglb.filekit.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.core.PickerMode
+import io.github.vinceglb.filekit.core.PickerType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +56,24 @@ fun CreateEditItemScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
+
+    // FileKit launcher for image selection
+    val imagePicker = rememberFilePickerLauncher(
+        type = PickerType.Image,
+        mode = PickerMode.Single,
+        title = "Select Image"
+    ) { file ->
+        file?.let { platformFile ->
+            scope.launch {
+                try {
+                    selectedImage = platformFile.readBytes()
+                    imageUploadError = null
+                } catch (e: Exception) {
+                    imageUploadError = "Error reading image: ${e.message}"
+                }
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         try {
@@ -85,10 +106,7 @@ fun CreateEditItemScreen(
                 ImageUploadSection(
                     currentImageUrl = item?.imageUrl,
                     selectedImage = selectedImage,
-                    onImageSelected = { imageData ->
-                        selectedImage = imageData
-                        imageUploadError = null
-                    },
+                    onImageSelected = { imagePicker.launch() },
                     onImageRemoved = { selectedImage = null },
                     enabled = !isLoading
                 )
@@ -196,15 +214,12 @@ fun CreateEditItemScreen(
 
                     Button(
                         onClick = {
-                            println("Debug: Button clicked - name='$name', quantity='$quantity'")
                             if (name.isNotBlank() && quantity.toIntOrNull() != null) {
-                                println("Debug: Validation OK, launching request")
                                 isLoading = true
                                 errorMessage = null
                                 scope.launch {
                                     try {
                                         val itemId = if (item == null) {
-                                            println("Debug: Creating new item")
                                             val result = apiClient.createItem(
                                                 CreateItemRequest(
                                                     name = name,
@@ -215,10 +230,8 @@ fun CreateEditItemScreen(
                                                     tagIds = selectedTags.map { it.id }
                                                 )
                                             )
-                                            println("Debug: Item created successfully: $result")
                                             result["id"] // Get the created item ID
                                         } else {
-                                            println("Debug: Updating item ${item.id}")
                                             apiClient.updateItem(
                                                 item.id,
                                                 UpdateItemRequest(
@@ -230,7 +243,6 @@ fun CreateEditItemScreen(
                                                     tagIds = selectedTags.map { it.id }
                                                 )
                                             )
-                                            println("Debug: Item updated successfully")
                                             item.id
                                         }
 
@@ -242,27 +254,19 @@ fun CreateEditItemScreen(
                                                     selectedImage!!,
                                                     "image.jpg"
                                                 )
-                                                println("Debug: Image uploaded successfully: $uploadResult")
                                             } catch (e: Exception) {
-                                                println("Debug: Error uploading image: ${e.message}")
                                                 imageUploadError = "Error uploading image: ${e.message}"
                                             }
                                         }
 
-                                        println("Debug: Calling onSaved()")
                                         onSaved()
                                     } catch (e: Exception) {
-                                        println("Debug: Error saving: ${e.message}")
-                                        e.printStackTrace()
                                         errorMessage = "Error saving: ${e.message}"
                                     } finally {
                                         isLoading = false
-                                        println("Debug: End of save process")
                                     }
                                 }
                             } else {
-                                println("Debug: Validation failed - name='$name' (blank=${name.isBlank()}), quantity='$quantity' (valid=${quantity.toIntOrNull() != null})")
-                                // Show error message if validation fails
                                 errorMessage = when {
                                     name.isBlank() -> "Name is required"
                                     quantity.toIntOrNull() == null -> "Quantity must be a valid number"
@@ -437,19 +441,16 @@ fun TagSelector(
 fun ImageUploadSection(
     currentImageUrl: String?,
     selectedImage: ByteArray?,
-    onImageSelected: (ByteArray) -> Unit,
+    onImageSelected: () -> Unit,
     onImageRemoved: () -> Unit,
     enabled: Boolean = true
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(16.dp)
         ) {
             Text(
                 text = "Item Image",
@@ -457,15 +458,63 @@ fun ImageUploadSection(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Display current or selected image
             if (selectedImage != null) {
-                // TODO: Display selected image (requires platform-specific implementation)
+                // Show selected image preview
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                ) {
+                    // Note: For now, we'll show a placeholder since we can't easily preview ByteArray
+                    // In a real app, you'd convert ByteArray to a format that can be displayed
+                    Card(
+                        modifier = Modifier.fillMaxSize(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    Icons.Default.Image,
+                                    contentDescription = "Selected image",
+                                    modifier = Modifier.size(48.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Text(
+                                    text = "Image Selected",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                    }
+                }
+            } else if (currentImageUrl != null) {
+                // Show current image
+                AsyncImage(
+                    model = currentImageUrl,
+                    contentDescription = "Current item image",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                // Show placeholder
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
                     )
                 ) {
                     Box(
@@ -477,104 +526,29 @@ fun ImageUploadSection(
                         ) {
                             Icon(
                                 Icons.Default.Image,
-                                contentDescription = "Selected image",
-                                modifier = Modifier.size(48.dp)
-                            )
-                            Text(
-                                text = "Image selected",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onImageRemoved,
-                        enabled = enabled
-                    ) {
-                        Text("Remove")
-                    }
-
-                    // TODO: Add button to change image
-                    Button(
-                        onClick = { /* TODO: Open image picker */ },
-                        enabled = enabled
-                    ) {
-                        Text("Change")
-                    }
-                }
-            } else if (currentImageUrl != null) {
-                AsyncImage(
-                    model = currentImageUrl,
-                    contentDescription = "Current image",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Crop
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedButton(
-                        onClick = onImageRemoved,
-                        enabled = enabled
-                    ) {
-                        Text("Remove")
-                    }
-
-                    Button(
-                        onClick = { /* TODO: Open image picker */ },
-                        enabled = enabled
-                    ) {
-                        Text("Change")
-                    }
-                }
-            } else {
-                // No image - show add button
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    border = CardDefaults.outlinedCardBorder()
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                Icons.Default.PhotoCamera,
-                                contentDescription = "Add image",
+                                contentDescription = "No image",
                                 modifier = Modifier.size(48.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Text(
-                                text = "No image",
+                                text = "No image selected",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 Button(
-                    onClick = { /* TODO: Open image sélecteur */ },
+                    onClick = onImageSelected,
+                    modifier = Modifier.weight(1f),
                     enabled = enabled
                 ) {
                     Icon(
@@ -583,7 +557,16 @@ fun ImageUploadSection(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Add Image")
+                    Text("Select Image")
+                }
+
+                if (selectedImage != null || currentImageUrl != null) {
+                    OutlinedButton(
+                        onClick = onImageRemoved,
+                        enabled = enabled
+                    ) {
+                        Text("Remove")
+                    }
                 }
             }
         }

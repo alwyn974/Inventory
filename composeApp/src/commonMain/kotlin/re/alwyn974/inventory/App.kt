@@ -1,10 +1,11 @@
 package re.alwyn974.inventory
 
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import re.alwyn974.inventory.shared.model.*
 import re.alwyn974.inventory.network.ApiClient
+import re.alwyn974.inventory.shared.model.ItemDto
 import re.alwyn974.inventory.ui.screens.*
 
 @Composable
@@ -14,6 +15,7 @@ fun App() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InventoryApp() {
     val apiClient = remember { ApiClient() }
@@ -21,82 +23,64 @@ fun InventoryApp() {
     var isLoggedIn by remember { mutableStateOf(false) }
     var editingItem by remember { mutableStateOf<ItemDto?>(null) }
 
-    when (currentScreen) {
-        Screen.Login -> {
-            LoginScreen(
-                apiClient = apiClient,
-                onLoginSuccess = { token ->
-                    isLoggedIn = true
-                    currentScreen = Screen.Items
-                }
-            )
-        }
+    // Use Scaffold to ensure proper layout with topbar
+    Scaffold { paddingValues ->
+        when (currentScreen) {
+            Screen.Login -> {
+                LoginScreen(
+                    apiClient = apiClient, onLoginSuccess = { token ->
+                        isLoggedIn = true
+                        currentScreen = Screen.Items
+                    })
+            }
 
-        Screen.Items -> {
-            ItemsScreen(
-                apiClient = apiClient,
-                onLogout = {
+            Screen.Items -> {
+                ItemsScreen(apiClient = apiClient, onLogout = {
                     isLoggedIn = false
                     currentScreen = Screen.Login
-                },
-                onCreateItem = {
+                }, onCreateItem = {
                     editingItem = null
                     currentScreen = Screen.CreateEditItem
-                },
-                onEditItem = { item ->
+                }, onEditItem = { item ->
                     editingItem = item
                     currentScreen = Screen.CreateEditItem
-                },
-                onManageCategories = {
+                }, onManageCategories = {
                     currentScreen = Screen.ManageCategories
-                },
-                onManageTags = {
+                }, onManageTags = {
                     currentScreen = Screen.ManageTags
-                },
-                onManageFolders = {
+                }, onManageFolders = {
                     currentScreen = Screen.ManageFolders
-                }
-            )
-        }
+                })
+            }
 
-        Screen.CreateEditItem -> {
-            CreateEditItemScreen(
-                apiClient = apiClient,
-                item = editingItem,
-                onBack = {
+            Screen.CreateEditItem -> {
+                CreateEditItemScreen(apiClient = apiClient, item = editingItem, onBack = {
                     currentScreen = Screen.Items
-                },
-                onSaved = {
+                }, onSaved = {
                     currentScreen = Screen.Items
-                }
-            )
-        }
+                })
+            }
 
-        Screen.ManageCategories -> {
-            ManageCategoriesScreen(
-                apiClient = apiClient,
-                onBack = {
-                    currentScreen = Screen.Items
-                }
-            )
-        }
+            Screen.ManageCategories -> {
+                ManageCategoriesScreen(
+                    apiClient = apiClient, onBack = {
+                        currentScreen = Screen.Items
+                    })
+            }
 
-        Screen.ManageTags -> {
-            ManageTagsScreen(
-                apiClient = apiClient,
-                onBack = {
-                    currentScreen = Screen.Items
-                }
-            )
-        }
+            Screen.ManageTags -> {
+                ManageTagsScreen(
+                    apiClient = apiClient, onBack = {
+                        currentScreen = Screen.Items
+                    })
+            }
 
-        Screen.ManageFolders -> {
-            ManageFoldersScreen(
-                apiClient = apiClient,
-                onBack = {
-                    currentScreen = Screen.Items
-                }
-            )
+            Screen.ManageFolders -> {
+                ManageFoldersScreen(
+                    apiClient = apiClient, onBack = {
+                        currentScreen = Screen.Items
+                    })
+            }
         }
     }
 }
@@ -108,14 +92,6 @@ sealed class Screen {
     object ManageCategories : Screen()
     object ManageTags : Screen()
     object ManageFolders : Screen()
-}
-
-class Greeting {
-    private val platform = getPlatform()
-
-    fun greet(): String {
-        return "Hello, ${platform.name}!"
-    }
 }
 
 expect fun getPlatform(): Platform

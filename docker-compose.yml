@@ -1,7 +1,7 @@
 services:
   # MinIO pour le stockage d'images
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:RELEASE.2024-01-16T16-07-38Z
     ports:
       - "9000:9000"
       - "9001:9001"
