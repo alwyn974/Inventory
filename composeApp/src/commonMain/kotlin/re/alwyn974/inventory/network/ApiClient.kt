@@ -6,6 +6,7 @@ import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.client.request.forms.*
@@ -44,162 +45,244 @@ class ApiClient {
         }
     }
 
+    // Helper function to handle API errors
+    private suspend inline fun <reified T> handleApiCall(call: suspend () -> HttpResponse): T {
+        return try {
+            val response = call()
+            if (response.status.isSuccess()) {
+                response.body<T>()
+            } else {
+                val errorBody = try {
+                    response.body<ErrorResponse>()
+                } catch (e: Exception) {
+                    ErrorResponse(
+                        error = "HTTP_ERROR",
+                        message = "HTTP ${response.status.value}: ${response.status.description}"
+                    )
+                }
+                throw ApiException(errorBody)
+            }
+        } catch (e: ApiException) {
+            throw e
+        } catch (e: Exception) {
+            throw ApiException(
+                ErrorResponse(
+                    error = "NETWORK_ERROR",
+                    message = e.message ?: "Unknown network error"
+                )
+            )
+        }
+    }
+
     // Auth endpoints
     suspend fun login(request: LoginRequest): LoginResponse {
-        return client.post("auth/login") {
-            setBody(request)
-        }.body()
+        return handleApiCall {
+            client.post("auth/login") {
+                setBody(request)
+            }
+        }
     }
 
     suspend fun getCurrentUser(): UserDto {
-        return client.get("auth/me") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.get("auth/me") {
+                addAuthHeader()
+            }
+        }
     }
 
     // Items endpoints
     suspend fun getItems(): List<ItemDto> {
-        return client.get("items") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.get("items") {
+                addAuthHeader()
+            }
+        }
     }
 
     suspend fun getItem(id: String): ItemDto {
-        return client.get("items/$id") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.get("items/$id") {
+                addAuthHeader()
+            }
+        }
     }
 
     suspend fun createItem(request: CreateItemRequest): Map<String, String> {
-        return client.post("items") {
-            addAuthHeader()
-            setBody(request)
-        }.body()
+        return handleApiCall {
+            client.post("items") {
+                addAuthHeader()
+                setBody(request)
+            }
+        }
     }
 
     suspend fun updateItem(id: String, request: UpdateItemRequest): SuccessResponse {
-        return client.patch("items/$id") {
-            addAuthHeader()
-            setBody(request)
-        }.body()
+        return handleApiCall {
+            client.patch("items/$id") {
+                addAuthHeader()
+                setBody(request)
+            }
+        }
     }
 
     suspend fun deleteItem(id: String): SuccessResponse {
-        return client.delete("items/$id") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.delete("items/$id") {
+                addAuthHeader()
+            }
+        }
     }
 
     suspend fun uploadItemImage(id: String, imageData: ByteArray, fileName: String): Map<String, String> {
-        return client.post("items/$id/image") {
-            addAuthHeader()
-            setBody(MultiPartFormDataContent(
-                formData {
-                    append("image", imageData, Headers.build {
-                        append(HttpHeaders.ContentType, "image/jpeg")
-                        append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
-                    })
-                }
-            ))
-        }.body()
+        return handleApiCall {
+            client.post("items/$id/image") {
+                addAuthHeader()
+                setBody(MultiPartFormDataContent(
+                    formData {
+                        append("image", imageData, Headers.build {
+                            append(HttpHeaders.ContentType, "image/jpeg")
+                            append(HttpHeaders.ContentDisposition, "filename=\"$fileName\"")
+                        })
+                    }
+                ))
+            }
+        }
     }
 
     // Categories endpoints
     suspend fun getCategories(): List<CategoryDto> {
-        return client.get("categories") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.get("categories") {
+                addAuthHeader()
+            }
+        }
     }
 
     suspend fun getCategory(id: String): CategoryDto {
-        return client.get("categories/$id") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.get("categories/$id") {
+                addAuthHeader()
+            }
+        }
     }
 
     suspend fun createCategory(request: CreateCategoryRequest): Map<String, String> {
-        return client.post("categories") {
-            addAuthHeader()
-            setBody(request)
-        }.body()
+        return handleApiCall {
+            client.post("categories") {
+                addAuthHeader()
+                setBody(request)
+            }
+        }
     }
 
     suspend fun updateCategory(id: String, request: UpdateCategoryRequest): SuccessResponse {
-        return client.patch("categories/$id") {
-            addAuthHeader()
-            setBody(request)
-        }.body()
+        return handleApiCall {
+            client.patch("categories/$id") {
+                addAuthHeader()
+                setBody(request)
+            }
+        }
     }
 
     suspend fun deleteCategory(id: String): SuccessResponse {
-        return client.delete("categories/$id") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.delete("categories/$id") {
+                addAuthHeader()
+            }
+        }
     }
 
     // Tags endpoints
     suspend fun getTags(): List<TagDto> {
-        return client.get("tags") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.get("tags") {
+                addAuthHeader()
+            }
+        }
     }
 
     suspend fun getTag(id: String): TagDto {
-        return client.get("tags/$id") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.get("tags/$id") {
+                addAuthHeader()
+            }
+        }
     }
 
     suspend fun createTag(request: CreateTagRequest): Map<String, String> {
-        return client.post("tags") {
-            addAuthHeader()
-            setBody(request)
-        }.body()
+        return handleApiCall {
+            client.post("tags") {
+                addAuthHeader()
+                setBody(request)
+            }
+        }
     }
 
     suspend fun updateTag(id: String, request: CreateTagRequest): SuccessResponse {
-        return client.patch("tags/$id") {
-            addAuthHeader()
-            setBody(request)
-        }.body()
+        return handleApiCall {
+            client.patch("tags/$id") {
+                addAuthHeader()
+                setBody(request)
+            }
+        }
     }
 
     suspend fun deleteTag(id: String): SuccessResponse {
-        return client.delete("tags/$id") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.delete("tags/$id") {
+                addAuthHeader()
+            }
+        }
     }
 
     // Folders endpoints
     suspend fun getFolders(): List<FolderDto> {
-        return client.get("folders") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.get("folders") {
+                addAuthHeader()
+            }
+        }
     }
 
     suspend fun getFolder(id: String): FolderDto {
-        return client.get("folders/$id") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.get("folders/$id") {
+                addAuthHeader()
+            }
+        }
     }
 
     suspend fun createFolder(request: CreateFolderRequest): Map<String, String> {
-        return client.post("folders") {
-            addAuthHeader()
-            setBody(request)
-        }.body()
+        return handleApiCall {
+            client.post("folders") {
+                addAuthHeader()
+                setBody(request)
+            }
+        }
     }
 
     suspend fun updateFolder(id: String, request: UpdateFolderRequest): SuccessResponse {
-        return client.patch("folders/$id") {
-            addAuthHeader()
-            setBody(request)
-        }.body()
+        return handleApiCall {
+            client.patch("folders/$id") {
+                addAuthHeader()
+                setBody(request)
+            }
+        }
     }
 
     suspend fun deleteFolder(id: String): SuccessResponse {
-        return client.delete("folders/$id") {
-            addAuthHeader()
-        }.body()
+        return handleApiCall {
+            client.delete("folders/$id") {
+                addAuthHeader()
+            }
+        }
+    }
+}
+
+// Custom exception class for API errors
+class ApiException(val errorResponse: ErrorResponse) : Exception(errorResponse.message) {
+    override fun toString(): String {
+        return "ApiException(error=${errorResponse.error}, message=${errorResponse.message})"
     }
 }
