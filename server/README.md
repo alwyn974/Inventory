@@ -1,260 +1,207 @@
-# API d'Inventaire - Serveur Ktor
+# Inventory API Server
 
-## Description
+A REST API server for managing inventory items, categories, tags, and folders built with Ktor and Kotlin.
 
-Cette application d'inventaire est développée avec Ktor et offre une API REST complète pour gérer un système d'inventaire avec authentification, gestion des rôles et stockage d'images via MinIO.
+## Features
 
-## Fonctionnalités
+- **Authentication**: JWT-based authentication system
+- **Items Management**: Create, read, update, delete inventory items
+- **Categories**: Organize items by categories
+- **Tags**: Tag items for better organization
+- **Folders**: Hierarchical folder structure for items
+- **Image Upload**: Upload and manage item images with MinIO
+- **Database**: PostgreSQL with Exposed ORM
+- **API Documentation**: OpenAPI/Swagger documentation
 
-### Authentification et Autorisation
-- Authentification JWT
-- Système de rôles : ADMIN, MANAGER, USER, VIEWER
-- Permissions granulaires par endpoint
-- Gestion des utilisateurs
+## Tech Stack
 
-### Gestion d'Inventaire
-- **Items** : Création, lecture, mise à jour, suppression
-- **Catégories** : Organisation des items par catégories dynamiques
-- **Tags** : Étiquetage flexible des items avec couleurs
-- **Dossiers** : Organisation hiérarchique des items
-- **Images** : Upload et gestion d'images via MinIO
+- **Kotlin** - Programming language
+- **Ktor** - Web framework
+- **Exposed** - SQL framework and ORM
+- **PostgreSQL** - Database
+- **MinIO** - Object storage for images
+- **JWT** - Authentication
+- **Koin** - Dependency injection
+- **Docker** - Containerization
 
-### Stockage
-- Base de données : PostgreSQL (production) / H2 (développement)
-- Images : MinIO (compatible S3)
+## Getting Started
 
-## Installation et Configuration
+### Prerequisites
 
-### Prérequis
-- JDK 17+
-- MinIO (ou instance locale)
-- PostgreSQL (pour la production)
+- JDK 11 or higher
+- PostgreSQL database
+- MinIO server (for image storage)
+- Docker (optional)
 
-### Variables d'environnement
-Copiez `.env.example` vers `.env` et configurez :
+### Environment Variables
 
-```bash
-# Base de données
+Create a `.env` file in the server directory with the following variables:
+
+```env
+# Database Configuration
 DATABASE_URL=jdbc:postgresql://localhost:5432/inventory
-DATABASE_USER=inventory_user
-DATABASE_PASSWORD=inventory_password
+DATABASE_USER=your_db_user
+DATABASE_PASSWORD=your_db_password
 
-# MinIO
-MINIO_ENDPOINT=http://localhost:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=minioadmin
-MINIO_BUCKET_NAME=inventory-images
+# MinIO Configuration
+MINIO_URL=http://localhost:9000
+MINIO_ACCESS_KEY=your_minio_access_key
+MINIO_SECRET_KEY=your_minio_secret_key
+MINIO_BUCKET=inventory-images
 
-# JWT
-JWT_SECRET=your-secure-secret-key
+# JWT Configuration
+JWT_SECRET=your_jwt_secret_key
+JWT_ISSUER=inventory-api
+JWT_AUDIENCE=inventory-users
+
+# Server Configuration
+PORT=8080
 ```
 
-### Démarrage rapide avec Docker Compose
+### Running the Server
+
+#### With Gradle
 
 ```bash
-# Démarrer MinIO et PostgreSQL
-docker-compose up -d
-
-# Construire et démarrer l'application
+# Build and run
 ./gradlew :server:run
+
+# Or build JAR and run
+./gradlew :server:buildFatJar
+java -jar server/build/libs/server-all.jar
 ```
+
+#### With Docker
+
+```bash
+# Build and run with Docker Compose
+docker-compose up --build
+```
+
+### API Documentation
+
+Once the server is running, you can access:
+
+- **API Documentation**: `http://localhost:8080/docs`
+- **OpenAPI Spec**: `http://localhost:8080/openapi.json`
+- **Health Check**: `http://localhost:8080/health`
 
 ## API Endpoints
 
-### Authentification
+### Authentication
 
-#### POST `/api/v1/auth/login`
-Connexion utilisateur
-```json
-{
-  "username": "admin",
-  "password": "admin123"
-}
-```
-
-#### GET `/api/v1/auth/me`
-Informations de l'utilisateur connecté (JWT requis)
-
-### Utilisateurs (ADMIN uniquement)
-
-#### GET `/api/v1/users`
-Liste tous les utilisateurs
-
-#### POST `/api/v1/users`
-Créer un nouvel utilisateur
-```json
-{
-  "username": "newuser",
-  "email": "user@example.com",
-  "password": "password",
-  "role": "USER"
-}
-```
-
-#### PUT `/api/v1/users/{id}`
-Mettre à jour un utilisateur
-
-#### DELETE `/api/v1/users/{id}`
-Supprimer un utilisateur
+- `POST /api/v1/auth/login` - User login
+- `GET /api/v1/auth/me` - Get current user info
 
 ### Items
 
-#### GET `/api/v1/items`
-Liste tous les items
+- `GET /api/v1/items` - List all items
+- `GET /api/v1/items/{id}` - Get specific item
+- `POST /api/v1/items` - Create new item
+- `PATCH /api/v1/items/{id}` - Update item
+- `DELETE /api/v1/items/{id}` - Delete item
+- `POST /api/v1/items/{id}/image` - Upload item image
 
-#### POST `/api/v1/items`
-Créer un nouvel item
-```json
-{
-  "name": "Ordinateur portable",
-  "description": "Dell XPS 13",
-  "quantity": 5,
-  "minQuantity": 2,
-  "categoryId": "uuid-category",
-  "folderId": "uuid-folder",
-  "tagIds": ["uuid-tag1", "uuid-tag2"]
-}
-```
+### Categories
 
-#### GET `/api/v1/items/{id}`
-Récupérer un item spécifique
-
-#### PUT `/api/v1/items/{id}`
-Mettre à jour un item
-
-#### DELETE `/api/v1/items/{id}`
-Supprimer un item
-
-#### POST `/api/v1/items/{id}/image`
-Upload d'image pour un item (multipart/form-data)
-
-### Catégories
-
-#### GET `/api/v1/categories`
-Liste toutes les catégories
-
-#### POST `/api/v1/categories`
-Créer une nouvelle catégorie
-```json
-{
-  "name": "Électronique",
-  "description": "Appareils électroniques"
-}
-```
-
-#### PUT `/api/v1/categories/{id}`
-Mettre à jour une catégorie
-
-#### DELETE `/api/v1/categories/{id}`
-Supprimer une catégorie
+- `GET /api/v1/categories` - List all categories
+- `GET /api/v1/categories/{id}` - Get specific category
+- `POST /api/v1/categories` - Create new category
+- `PATCH /api/v1/categories/{id}` - Update category
+- `DELETE /api/v1/categories/{id}` - Delete category
 
 ### Tags
 
-#### GET `/api/v1/tags`
-Liste tous les tags
+- `GET /api/v1/tags` - List all tags
+- `GET /api/v1/tags/{id}` - Get specific tag
+- `POST /api/v1/tags` - Create new tag
+- `PATCH /api/v1/tags/{id}` - Update tag
+- `DELETE /api/v1/tags/{id}` - Delete tag
 
-#### POST `/api/v1/tags`
-Créer un nouveau tag
-```json
-{
-  "name": "Urgent",
-  "color": "#ff0000"
-}
+### Folders
+
+- `GET /api/v1/folders` - List all folders
+- `GET /api/v1/folders/{id}` - Get specific folder
+- `POST /api/v1/folders` - Create new folder
+- `PATCH /api/v1/folders/{id}` - Update folder
+- `DELETE /api/v1/folders/{id}` - Delete folder
+
+## Database Schema
+
+The server uses PostgreSQL with the following main tables:
+
+- `users` - User accounts
+- `items` - Inventory items
+- `categories` - Item categories
+- `tags` - Item tags
+- `folders` - Hierarchical folders
+- `item_tags` - Many-to-many relationship between items and tags
+
+## Image Storage
+
+Images are stored in MinIO object storage. When an image is uploaded:
+
+1. The image is validated for type and size
+2. A unique filename is generated
+3. The image is stored in MinIO
+4. The image URL is saved in the database
+
+## Security
+
+- JWT tokens are required for all API endpoints (except login)
+- Passwords are hashed using bcrypt
+- CORS is configured for cross-origin requests
+- Rate limiting is implemented to prevent abuse
+
+## Development
+
+### Project Structure
+
+```
+server/
+├── src/main/kotlin/re/alwyn974/inventory/
+│   ├── Application.kt              # Main application setup
+│   ├── routes/                     # API route definitions
+│   │   ├── AuthRoutes.kt
+│   │   ├── ItemRoutes.kt
+│   │   └── CategoryTagFolderRoutes.kt
+│   ├── service/                    # Business logic services
+│   │   ├── DatabaseFactory.kt
+│   │   ├── JwtService.kt
+│   │   ├── PasswordService.kt
+│   │   └── S3Service.kt
+│   └── model/                      # Data models and DTOs
+├── src/main/resources/
+│   ├── logback.xml                 # Logging configuration
+│   └── scalar.html                 # API documentation template
+└── build.gradle.kts                # Build configuration
 ```
 
-#### DELETE `/api/v1/tags/{id}`
-Supprimer un tag
+### Building
 
-### Dossiers
-
-#### GET `/api/v1/folders`
-Liste tous les dossiers
-
-#### POST `/api/v1/folders`
-Créer un nouveau dossier
-```json
-{
-  "name": "Bureau",
-  "description": "Équipement de bureau",
-  "parentFolderId": "uuid-parent"
-}
-```
-
-#### PUT `/api/v1/folders/{id}`
-Mettre à jour un dossier
-
-#### DELETE `/api/v1/folders/{id}`
-Supprimer un dossier
-
-## Rôles et Permissions
-
-### ADMIN
-- Accès complet à toutes les fonctionnalités
-- Gestion des utilisateurs
-
-### MANAGER
-- Gestion complète de l'inventaire
-- Pas d'accès à la gestion des utilisateurs
-
-### USER
-- Création, lecture, mise à jour des items, catégories, tags, dossiers
-- Pas de suppression
-
-### VIEWER
-- Lecture seule sur tous les éléments
-
-## Authentification
-
-L'API utilise JWT pour l'authentification. Après connexion, incluez le token dans l'en-tête :
-```
-Authorization: Bearer <votre-token-jwt>
-```
-
-## Compte par défaut
-
-Un compte administrateur est créé automatiquement :
-- Username: `admin`
-- Password: `admin123`
-
-**⚠️ Changez ce mot de passe en production !**
-
-## Structure de réponse
-
-### Succès
-```json
-{
-  "message": "Operation successful"
-}
-```
-
-### Erreur
-```json
-{
-  "error": "ERROR_CODE",
-  "message": "Description de l'erreur"
-}
-```
-
-## Développement
-
-### Lancer en mode développement
 ```bash
-./gradlew :server:run --args="--development"
-```
+# Build the project
+./gradlew :server:build
 
-### Tests
-```bash
+# Run tests
 ./gradlew :server:test
+
+# Generate fat JAR
+./gradlew :server:buildFatJar
 ```
 
-## Production
+### Configuration
 
-1. Configurez PostgreSQL
-2. Configurez MinIO avec des credentials sécurisés
-3. Changez la clé JWT secrète
-4. Utilisez HTTPS
-5. Configurez les CORS selon vos besoins
+The server configuration is handled through environment variables and can be customized in `Application.kt`.
 
-## Support
+## Contributing
 
-Pour toute question ou problème, consultez la documentation ou créez une issue.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
