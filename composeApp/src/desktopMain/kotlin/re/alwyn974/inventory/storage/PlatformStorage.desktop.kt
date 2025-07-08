@@ -4,29 +4,34 @@ import java.util.prefs.Preferences
 
 actual class PlatformStorage actual constructor() {
     private val prefs = Preferences.userNodeForPackage(PlatformStorage::class.java)
+    private val keyPrefix = "inventory_"
 
     actual fun save(key: String, value: String) {
-        prefs.put(key, value)
+        val prefixedKey = keyPrefix + key
+        prefs.put(prefixedKey, value)
+        prefs.flush()
     }
 
     actual fun load(key: String): String? {
-        return prefs.get(key, null)
+        val prefixedKey = keyPrefix + key
+        return prefs.get(prefixedKey, null)
     }
 
     actual fun remove(key: String) {
-        prefs.remove(key)
+        val prefixedKey = keyPrefix + key
+        prefs.remove(prefixedKey)
+        prefs.flush()
     }
 
     actual fun clear() {
         try {
-            prefs.clear()
-        } catch (e: Exception) {
-            // Fallback: remove known keys
-            prefs.keys().forEach { key ->
-                if (key.startsWith("inventory_")) {
-                    prefs.remove(key)
-                }
+            val keys = prefs.keys()
+            keys.filter { it.startsWith(keyPrefix) }.forEach { key ->
+                prefs.remove(key)
             }
+            prefs.flush()
+        } catch (e: Exception) {
+            println("PlatformStorage: Error clearing preferences: ${e.message}")
         }
     }
 }

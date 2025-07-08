@@ -4,28 +4,31 @@ import kotlinx.browser.localStorage
 import org.w3c.dom.get
 import org.w3c.dom.set
 
+// Actual implementation using browser localStorage
 actual class PlatformStorage actual constructor() {
+    private val keyPrefix = "inventory_"
 
     actual fun save(key: String, value: String) {
-        localStorage[key] = value
+        val prefixedKey = keyPrefix + key
+        localStorage[prefixedKey] = value
     }
 
     actual fun load(key: String): String? {
-        return localStorage[key]
+        val prefixedKey = keyPrefix + key
+        return localStorage[prefixedKey]
     }
 
     actual fun remove(key: String) {
-        localStorage.removeItem(key)
+        val prefixedKey = keyPrefix + key
+        localStorage.removeItem(prefixedKey)
     }
 
     actual fun clear() {
-        // Clear all app-specific keys
         val keysToRemove = mutableListOf<String>()
         for (i in 0 until localStorage.length) {
             localStorage.key(i)?.let { key ->
-                if (key.startsWith("inventory_")) {
+                if (key.startsWith(keyPrefix))
                     keysToRemove.add(key)
-                }
             }
         }
         keysToRemove.forEach { localStorage.removeItem(it) }
