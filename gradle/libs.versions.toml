@@ -31,6 +31,7 @@ logback = "1.5.18"
 minio = "8.5.17"
 postgresql = "42.7.4"
 filekit = "0.8.7"
+datastore = "1.1.1"
 
 [libraries]
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
@@ -90,6 +91,8 @@ minio = { module = "io.minio:minio", version.ref = "minio" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 filekit-compose = { module = "io.github.vinceglb:filekit-compose", version.ref = "filekit" }
+androidx-dataStore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+androidx-dataStore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

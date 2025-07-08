@@ -86,6 +86,10 @@ kotlin {
 
             // Coroutines
             implementation(libs.kotlinx.coroutines.core)
+
+            // DataStore for persistent storage
+            implementation(libs.androidx.dataStore)
+            implementation(libs.androidx.dataStore.preferences)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

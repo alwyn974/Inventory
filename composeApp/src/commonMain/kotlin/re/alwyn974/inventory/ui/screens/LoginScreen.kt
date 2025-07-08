@@ -93,7 +93,7 @@ fun LoginScreen(
                                     val response = apiClient.login(LoginRequest(username, password))
                                     apiClient.setTokens(response.accessToken, response.refreshToken)
 
-                                    // Save session with both tokens
+                                    // Save session with both tokens using suspend function
                                     sessionManager.saveSession(
                                         response.accessToken,
                                         response.refreshToken,

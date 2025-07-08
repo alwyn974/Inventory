@@ -6,12 +6,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import re.alwyn974.inventory.shared.model.UserDto
-import kotlin.concurrent.Volatile
 import kotlinx.serialization.Serializable
+import re.alwyn974.inventory.shared.model.UserDto
+import kotlinx.coroutines.runBlocking
 import re.alwyn974.inventory.network.ApiClient
 
-class SessionManager {
+class SessionManager private constructor() {
     private val _isLoggedIn = MutableStateFlow(false)
     val isLoggedIn: StateFlow<Boolean> = _isLoggedIn.asStateFlow()
 
@@ -21,12 +21,10 @@ class SessionManager {
     private var accessToken: String? = null
     private var refreshToken: String? = null
 
-    private val storage = PlatformStorage()
+    private val dataStoreManager = DataStoreManager(createDataStore())
     private val json = Json { ignoreUnknownKeys = true }
 
     companion object {
-        private const val SESSION_KEY = "inventory_session"
-
         @Volatile
         private var instance: SessionManager? = null
 
@@ -41,61 +39,62 @@ class SessionManager {
 
     init {
         // Try to load saved session on initialization
-        println("SessionManager: Initializing...")
-        val loaded = loadSavedSession()
-        println("SessionManager: Session loaded: $loaded")
+        println("SessionManager: Initializing with DataStore...")
+        runBlocking {
+            val loaded = loadSavedSession()
+            println("SessionManager: Session loaded: $loaded")
+        }
     }
 
-    fun saveSession(accessToken: String, refreshToken: String, user: UserDto) {
+    suspend fun saveSession(accessToken: String, refreshToken: String, user: UserDto) {
         println("SessionManager: Saving session for user: ${user.username}")
         this.accessToken = accessToken
         this.refreshToken = refreshToken
         _currentUser.value = user
         _isLoggedIn.value = true
 
-        // Save to persistent storage
+        // Save to DataStore
         val sessionData = SessionData(accessToken, refreshToken, user)
         try {
             val sessionJson = json.encodeToString(sessionData)
             println("SessionManager: Serialized session data: ${sessionJson.take(100)}...")
-            storage.save(SESSION_KEY, sessionJson)
-            println("SessionManager: Session saved successfully")
+            dataStoreManager.saveSession(sessionJson)
+            println("SessionManager: Session saved successfully to DataStore")
         } catch (e: Exception) {
-            // Handle serialization error - continue without persistent storage
             println("SessionManager: Failed to save session: ${e.message}")
         }
     }
 
-    fun updateTokens(accessToken: String, refreshToken: String) {
+    suspend fun updateTokens(accessToken: String, refreshToken: String) {
         println("SessionManager: Updating tokens...")
         this.accessToken = accessToken
         this.refreshToken = refreshToken
 
-        // Update storage with new tokens if user exists
+        // Update DataStore with new tokens if user exists
         _currentUser.value?.let { user ->
             saveSession(accessToken, refreshToken, user)
         }
     }
 
-    fun clearSession() {
+    suspend fun clearSession() {
         println("SessionManager: Clearing session...")
         accessToken = null
         refreshToken = null
         _currentUser.value = null
         _isLoggedIn.value = false
 
-        // Clear persistent storage
-        storage.remove(SESSION_KEY)
-        println("SessionManager: Session cleared")
+        // Clear DataStore
+        dataStoreManager.clearSession()
+        println("SessionManager: Session cleared from DataStore")
     }
 
     fun getAccessToken(): String? = accessToken
     fun getRefreshToken(): String? = refreshToken
 
-    private fun loadSavedSession(): Boolean {
+    private suspend fun loadSavedSession(): Boolean {
         return try {
-            println("SessionManager: Loading saved session...")
-            val sessionJson = storage.load(SESSION_KEY)
+            println("SessionManager: Loading saved session from DataStore...")
+            val sessionJson = dataStoreManager.getSession()
             if (sessionJson != null) {
                 println("SessionManager: Found saved session data: ${sessionJson.take(100)}...")
                 val sessionData = json.decodeFromString<SessionData>(sessionJson)
@@ -106,13 +105,12 @@ class SessionManager {
                 println("SessionManager: Session restored for user: ${sessionData.user.username}")
                 true
             } else {
-                println("SessionManager: No saved session found")
+                println("SessionManager: No saved session found in DataStore")
                 false
             }
         } catch (e: Exception) {
-            // Handle deserialization error - clear corrupted data
             println("SessionManager: Failed to load session: ${e.message}")
-            storage.remove(SESSION_KEY)
+            dataStoreManager.clearSession()
             false
         }
     }
@@ -123,7 +121,7 @@ class SessionManager {
         return isValid
     }
 
-    // New method to initialize ApiClient with saved tokens
+    // Initialize ApiClient with saved tokens
     fun initializeApiClient(apiClient: ApiClient) {
         if (hasValidSession()) {
             println("SessionManager: Initializing ApiClient with saved tokens")
