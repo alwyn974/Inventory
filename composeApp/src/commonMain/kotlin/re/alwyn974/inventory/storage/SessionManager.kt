@@ -1,13 +1,13 @@
 package re.alwyn974.inventory.storage
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import re.alwyn974.inventory.shared.model.UserDto
-import kotlin.jvm.JvmStatic
+import kotlin.concurrent.Volatile
 
 class SessionManager {
     private val _isLoggedIn = MutableStateFlow(false)
@@ -19,22 +19,54 @@ class SessionManager {
     private var accessToken: String? = null
     private var refreshToken: String? = null
 
+    private val storage = PlatformStorage()
+    private val json = Json { ignoreUnknownKeys = true }
+
+    companion object {
+        private const val SESSION_KEY = "inventory_session"
+
+        @Volatile
+        private var instance: SessionManager? = null
+
+        fun getInstance(): SessionManager {
+            return instance ?: run {
+                val newInstance = SessionManager()
+                instance = newInstance
+                newInstance
+            }
+        }
+    }
+
+    init {
+        // Try to load saved session on initialization
+        loadSavedSession()
+    }
+
     fun saveSession(accessToken: String, refreshToken: String, user: UserDto) {
         this.accessToken = accessToken
         this.refreshToken = refreshToken
         _currentUser.value = user
         _isLoggedIn.value = true
 
-        // Save to local storage (implementation depends on platform)
-        saveToLocalStorage(accessToken, refreshToken, user)
+        // Save to persistent storage
+        val sessionData = SessionData(accessToken, refreshToken, user)
+        try {
+            val sessionJson = json.encodeToString(sessionData)
+            storage.save(SESSION_KEY, sessionJson)
+        } catch (e: Exception) {
+            // Handle serialization error - continue without persistent storage
+            println("Failed to save session: ${e.message}")
+        }
     }
 
     fun updateTokens(accessToken: String, refreshToken: String) {
         this.accessToken = accessToken
         this.refreshToken = refreshToken
 
-        // Update local storage
-        saveTokensToLocalStorage(accessToken, refreshToken)
+        // Update storage with new tokens if user exists
+        _currentUser.value?.let { user ->
+            saveSession(accessToken, refreshToken, user)
+        }
     }
 
     fun clearSession() {
@@ -43,59 +75,41 @@ class SessionManager {
         _currentUser.value = null
         _isLoggedIn.value = false
 
-        // Clear local storage
-        clearLocalStorage()
+        // Clear persistent storage
+        storage.remove(SESSION_KEY)
     }
 
     fun getAccessToken(): String? = accessToken
     fun getRefreshToken(): String? = refreshToken
 
-    fun loadSavedSession(): Boolean {
-        val savedTokens = loadFromLocalStorage()
-        return if (savedTokens != null) {
-            accessToken = savedTokens.accessToken
-            refreshToken = savedTokens.refreshToken
-            _currentUser.value = savedTokens.user
-            _isLoggedIn.value = true
-            true
-        } else {
+    private fun loadSavedSession(): Boolean {
+        return try {
+            val sessionJson = storage.load(SESSION_KEY)
+            if (sessionJson != null) {
+                val sessionData = json.decodeFromString<SessionData>(sessionJson)
+                accessToken = sessionData.accessToken
+                refreshToken = sessionData.refreshToken
+                _currentUser.value = sessionData.user
+                _isLoggedIn.value = true
+                true
+            } else {
+                false
+            }
+        } catch (e: Exception) {
+            // Handle deserialization error - clear corrupted data
+            println("Failed to load session: ${e.message}")
+            storage.remove(SESSION_KEY)
             false
         }
     }
 
-    // Platform-specific implementations
-    private fun saveToLocalStorage(accessToken: String, refreshToken: String, user: UserDto) {
-        // TODO: Implement platform-specific storage (SharedPreferences for Android, UserDefaults for iOS, localStorage for Web)
-        // For now, we'll just keep tokens in memory
+    fun hasValidSession(): Boolean {
+        return accessToken != null && refreshToken != null && _currentUser.value != null
     }
 
-    private fun saveTokensToLocalStorage(accessToken: String, refreshToken: String) {
-        // TODO: Implement platform-specific storage
-    }
-
-    private fun clearLocalStorage() {
-        // TODO: Implement platform-specific storage clearing
-    }
-
-    private fun loadFromLocalStorage(): SavedSession? {
-        // TODO: Implement platform-specific loading
-        return null
-    }
-
-    private data class SavedSession(
+    private data class SessionData(
         val accessToken: String,
         val refreshToken: String,
         val user: UserDto
     )
-
-    companion object {
-        @JvmStatic
-        private var instance: SessionManager? = null
-
-        fun getInstance(): SessionManager {
-            return instance ?: synchronized(this) {
-                instance ?: SessionManager().also { instance = it }
-            }
-        }
-    }
 }
