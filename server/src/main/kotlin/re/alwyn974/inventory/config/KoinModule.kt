@@ -5,6 +5,7 @@ import re.alwyn974.inventory.service.DatabaseFactory
 import re.alwyn974.inventory.service.JwtService
 import re.alwyn974.inventory.service.MinioService
 import re.alwyn974.inventory.service.PasswordService
+import re.alwyn974.inventory.service.RefreshTokenService
 
 val appModule = module {
 
@@ -15,6 +16,7 @@ val appModule = module {
     single { DatabaseFactory(get()) }
     single { JwtService(get()) }
     single { PasswordService }
+    single { RefreshTokenService() }
     single {
         MinioService(
             endpoint = get<AppConfig>().minioEndpoint,

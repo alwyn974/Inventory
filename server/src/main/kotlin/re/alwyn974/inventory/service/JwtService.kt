@@ -8,18 +8,20 @@ import re.alwyn974.inventory.shared.model.UserRole
 import java.util.*
 
 class JwtService(private val config: AppConfig) {
-    private val validityInMs = 36_000_00 * 24 * 7 // 1 week
+    private val accessTokenValidityInMs = 15 * 60 * 1000L // 15 minutes
+    private val refreshTokenValidityInMs = 30 * 24 * 60 * 60 * 1000L // 30 days
 
     val algorithm: Algorithm = Algorithm.HMAC256(config.jwtSecret)
 
-    fun generateToken(userId: String, username: String, role: UserRole): String {
+    fun generateAccessToken(userId: String, username: String, role: UserRole): String {
         return JWT.create()
             .withSubject(userId)
             .withIssuer(config.jwtIssuer)
             .withAudience(config.jwtAudience)
             .withClaim("username", username)
             .withClaim("role", role.name)
-            .withExpiresAt(Date(System.currentTimeMillis() + validityInMs))
+            .withClaim("type", "access")
+            .withExpiresAt(Date(System.currentTimeMillis() + accessTokenValidityInMs))
             .sign(algorithm)
     }
 
@@ -28,6 +30,7 @@ class JwtService(private val config: AppConfig) {
             val verifier = JWT.require(algorithm)
                 .withIssuer(config.jwtIssuer)
                 .withAudience(config.jwtAudience)
+                .withClaim("type", "access")
                 .build()
 
             val jwt = verifier.verify(token)
@@ -39,6 +42,12 @@ class JwtService(private val config: AppConfig) {
         } catch (e: JWTVerificationException) {
             null
         }
+    }
+
+    // Keep the old method for backward compatibility, but mark as deprecated
+    @Deprecated("Use generateAccessToken instead", ReplaceWith("generateAccessToken(userId, username, role)"))
+    fun generateToken(userId: String, username: String, role: UserRole): String {
+        return generateAccessToken(userId, username, role)
     }
 }
 

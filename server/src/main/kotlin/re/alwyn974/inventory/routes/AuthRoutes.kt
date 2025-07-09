@@ -25,10 +25,13 @@ import re.alwyn974.inventory.model.Users.email
 import re.alwyn974.inventory.model.Users.username
 import re.alwyn974.inventory.service.JwtService
 import re.alwyn974.inventory.service.PasswordService
+import re.alwyn974.inventory.service.RefreshTokenService
 import re.alwyn974.inventory.shared.model.CreateUserRequest
 import re.alwyn974.inventory.shared.model.ErrorResponse
 import re.alwyn974.inventory.shared.model.LoginRequest
 import re.alwyn974.inventory.shared.model.LoginResponse
+import re.alwyn974.inventory.shared.model.RefreshTokenRequest
+import re.alwyn974.inventory.shared.model.RefreshTokenResponse
 import re.alwyn974.inventory.shared.model.SuccessResponse
 import re.alwyn974.inventory.shared.model.UpdateUserRequest
 import re.alwyn974.inventory.shared.model.UserDto
@@ -39,12 +42,13 @@ fun Route.authRoutes() {
     // Koin dependency injection
     val jwtService by inject<JwtService>()
     val passwordService by inject<PasswordService>()
+    val refreshTokenService by inject<RefreshTokenService>()
 
     route("/auth") {
         post("/login", {
             tags = listOf("Authentication")
             summary = "User login"
-            description = "Authenticate user and get JWT token"
+            description = "Authenticate user and get access and refresh tokens"
             request {
                 body<LoginRequest> {
                     example("default") {
@@ -83,11 +87,16 @@ fun Route.authRoutes() {
                 return@post
             }
 
-            val token = jwtService.generateToken(
-                userId = user[Users.id].toString(),
+            val userId = user[Users.id].value
+            val deviceInfo = call.request.headers["User-Agent"]
+
+            val accessToken = jwtService.generateAccessToken(
+                userId = userId.toString(),
                 username = user[Users.username],
                 role = user[Users.role]
             )
+
+            val refreshToken = refreshTokenService.generateRefreshToken(userId, deviceInfo)
 
             val userDto = UserDto(
                 id = user[Users.id].toString(),
@@ -99,7 +108,83 @@ fun Route.authRoutes() {
                 updatedAt = user[Users.updatedAt].toString()
             )
 
-            call.respond(LoginResponse(token, userDto))
+            call.respond(LoginResponse(accessToken, refreshToken, userDto))
+        }
+
+        post("/refresh", {
+            tags = listOf("Authentication")
+            summary = "Refresh access token"
+            description = "Get a new access token using a refresh token"
+            request {
+                body<RefreshTokenRequest> {
+                    example("default") {
+                        value = RefreshTokenRequest("your-refresh-token-here")
+                    }
+                }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Token refresh successful"
+                    body<RefreshTokenResponse>()
+                }
+                HttpStatusCode.Unauthorized to {
+                    description = "Invalid or expired refresh token"
+                    body<ErrorResponse>()
+                }
+            }
+        }) {
+            val refreshRequest = call.receive<RefreshTokenRequest>()
+
+            val userId = refreshTokenService.validateAndUseRefreshToken(refreshRequest.refreshToken)
+
+            if (userId == null) {
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse("INVALID_REFRESH_TOKEN", "Invalid or expired refresh token"))
+                return@post
+            }
+
+            val user = transaction {
+                Users.selectAll().where { Users.id eq userId }.singleOrNull()
+            }
+
+            if (user == null || !user[Users.isActive]) {
+                call.respond(HttpStatusCode.Unauthorized, ErrorResponse("USER_NOT_FOUND", "User not found or inactive"))
+                return@post
+            }
+
+            val deviceInfo = call.request.headers["User-Agent"]
+
+            val newAccessToken = jwtService.generateAccessToken(
+                userId = userId.toString(),
+                username = user[Users.username],
+                role = user[Users.role]
+            )
+
+            val newRefreshToken = refreshTokenService.generateRefreshToken(userId, deviceInfo)
+
+            call.respond(RefreshTokenResponse(newAccessToken, newRefreshToken))
+        }
+
+        post("/logout", {
+            tags = listOf("Authentication")
+            summary = "User logout"
+            description = "Logout user and revoke refresh token"
+            request {
+                body<RefreshTokenRequest> {
+                    example("default") {
+                        value = RefreshTokenRequest("your-refresh-token-here")
+                    }
+                }
+            }
+            response {
+                HttpStatusCode.OK to {
+                    description = "Logout successful"
+                    body<SuccessResponse>()
+                }
+            }
+        }) {
+            val logoutRequest = call.receive<RefreshTokenRequest>()
+            refreshTokenService.revokeRefreshToken(logoutRequest.refreshToken)
+            call.respond(SuccessResponse("Logged out successfully"))
         }
 
         authenticate("jwt") {

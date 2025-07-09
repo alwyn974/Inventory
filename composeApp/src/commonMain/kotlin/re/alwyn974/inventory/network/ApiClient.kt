@@ -12,6 +12,8 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.client.request.forms.*
 import io.ktor.http.content.*
 import kotlinx.serialization.json.Json
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import re.alwyn974.inventory.shared.model.*
 
 class ApiClient {
@@ -33,22 +35,72 @@ class ApiClient {
         }
     }
 
-    private var authToken: String? = null
+    private var accessToken: String? = null
+    private var refreshToken: String? = null
+    private val refreshMutex = Mutex()
+    private var isRefreshing = false
 
-    fun setAuthToken(token: String) {
-        authToken = token
+    fun setTokens(accessToken: String, refreshToken: String) {
+        this.accessToken = accessToken
+        this.refreshToken = refreshToken
     }
 
+    fun clearTokens() {
+        accessToken = null
+        refreshToken = null
+    }
+
+    fun getAccessToken(): String? = accessToken
+    fun getRefreshToken(): String? = refreshToken
+
     private fun HttpRequestBuilder.addAuthHeader() {
-        authToken?.let { token ->
+        accessToken?.let { token ->
             header("Authorization", "Bearer $token")
         }
     }
 
-    // Helper function to handle API errors
+    private suspend fun refreshTokenIfNeeded(): Boolean {
+        val currentRefreshToken = refreshToken ?: return false
+
+        return refreshMutex.withLock {
+            if (isRefreshing) return@withLock true
+
+            isRefreshing = true
+            try {
+                val response = client.post("auth/refresh") {
+                    setBody(RefreshTokenRequest(currentRefreshToken))
+                }
+
+                if (response.status.isSuccess()) {
+                    val refreshResponse = response.body<RefreshTokenResponse>()
+                    accessToken = refreshResponse.accessToken
+                    refreshToken = refreshResponse.refreshToken
+                    true
+                } else {
+                    clearTokens()
+                    false
+                }
+            } catch (e: Exception) {
+                clearTokens()
+                false
+            } finally {
+                isRefreshing = false
+            }
+        }
+    }
+
+    // Enhanced helper function with automatic token refresh
     private suspend inline fun <reified T> handleApiCall(call: suspend () -> HttpResponse): T {
         return try {
-            val response = call()
+            var response = call()
+
+            // If unauthorized, try to refresh token and retry once
+            if (response.status == HttpStatusCode.Unauthorized && refreshToken != null) {
+                if (refreshTokenIfNeeded()) {
+                    response = call()
+                }
+            }
+
             if (response.status.isSuccess()) {
                 response.body<T>()
             } else {
@@ -78,6 +130,22 @@ class ApiClient {
     suspend fun login(request: LoginRequest): LoginResponse {
         return handleApiCall {
             client.post("auth/login") {
+                setBody(request)
+            }
+        }
+    }
+
+    suspend fun refreshToken(request: RefreshTokenRequest): RefreshTokenResponse {
+        return handleApiCall {
+            client.post("auth/refresh") {
+                setBody(request)
+            }
+        }
+    }
+
+    suspend fun logout(request: RefreshTokenRequest): SuccessResponse {
+        return handleApiCall {
+            client.post("auth/logout") {
                 setBody(request)
             }
         }

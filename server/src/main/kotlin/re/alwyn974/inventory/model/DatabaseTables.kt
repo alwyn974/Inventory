@@ -74,3 +74,13 @@ object RolePermissions : UUIDTable("role_permissions") {
         uniqueIndex(role, permission)
     }
 }
+
+object RefreshTokens : UUIDTable("refresh_tokens") {
+    val user = reference("user_id", Users)
+    val token = varchar("token", 255).uniqueIndex()
+    val expiresAt = datetime("expires_at")
+    val isRevoked = bool("is_revoked").default(false)
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
+    val lastUsedAt = datetime("last_used_at").nullable()
+    val deviceInfo = varchar("device_info", 255).nullable()
+}

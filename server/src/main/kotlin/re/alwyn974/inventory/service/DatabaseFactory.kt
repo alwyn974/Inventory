@@ -22,7 +22,8 @@ class DatabaseFactory(private val config: AppConfig) {
                 Items,
                 ItemTags,
                 Permissions,
-                RolePermissions
+                RolePermissions,
+                RefreshTokens
             )
 
             initializePermissions()

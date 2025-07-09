@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import re.alwyn974.inventory.network.ApiClient
 import re.alwyn974.inventory.shared.model.LoginRequest
+import re.alwyn974.inventory.storage.SessionManager
 
 @Composable
 fun LoginScreen(
@@ -29,6 +30,7 @@ fun LoginScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
+    val sessionManager = SessionManager.getInstance()
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -89,8 +91,16 @@ fun LoginScreen(
                             scope.launch {
                                 try {
                                     val response = apiClient.login(LoginRequest(username, password))
-                                    apiClient.setAuthToken(response.token)
-                                    onLoginSuccess(response.token)
+                                    apiClient.setTokens(response.accessToken, response.refreshToken)
+
+                                    // Save session with both tokens
+                                    sessionManager.saveSession(
+                                        response.accessToken,
+                                        response.refreshToken,
+                                        response.user
+                                    )
+
+                                    onLoginSuccess(response.accessToken)
                                 } catch (e: Exception) {
                                     errorMessage = "Login error: ${e.message}"
                                 } finally {
