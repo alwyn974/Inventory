@@ -8,8 +8,11 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.Serializable
 import re.alwyn974.inventory.shared.model.UserDto
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import re.alwyn974.inventory.network.ApiClient
+import kotlin.concurrent.Volatile
 
 class SessionManager private constructor() {
     private val _isLoggedIn = MutableStateFlow(false)
@@ -38,11 +41,15 @@ class SessionManager private constructor() {
     }
 
     init {
-        // Try to load saved session on initialization
+        // Try to load saved session on initialization asynchronously
         println("SessionManager: Initializing with DataStore...")
-        runBlocking {
-            val loaded = loadSavedSession()
-            println("SessionManager: Session loaded: $loaded")
+        CoroutineScope(Dispatchers.Default).launch {
+            try {
+                val loaded = loadSavedSession()
+                println("SessionManager: Session loaded: $loaded")
+            } catch (e: Exception) {
+                println("SessionManager: Failed to load session during init: ${e.message}")
+            }
         }
     }
 
