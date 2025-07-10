@@ -13,7 +13,7 @@ fun initializeDataStore(context: Context) {
     appContext = context.applicationContext
 }
 
-actual fun createDataStore(): DataStore<Preferences> {
+actual fun createDataStore(): DataStore<Preferences>? {
     return appContext?.dataStore
         ?: throw IllegalStateException("DataStore not initialized. Call initializeDataStore(context) first.")
 }

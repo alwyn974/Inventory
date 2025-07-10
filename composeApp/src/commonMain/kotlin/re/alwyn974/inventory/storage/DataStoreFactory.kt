@@ -6,6 +6,6 @@ import androidx.datastore.preferences.core.Preferences
 /**
  * Gets the singleton DataStore instance, creating it if necessary.
  */
-expect fun createDataStore(): DataStore<Preferences>
+expect fun createDataStore(): DataStore<Preferences>?
 
 internal const val dataStoreFileName = "inventory.preferences"

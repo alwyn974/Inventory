@@ -6,7 +6,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import okio.Path.Companion.toPath
 import java.io.File
 
-actual fun createDataStore(): DataStore<Preferences> {
+actual fun createDataStore(): DataStore<Preferences>? {
     return PreferenceDataStoreFactory.createWithPath(
         produceFile = {
             val userHome = System.getProperty("user.home")
