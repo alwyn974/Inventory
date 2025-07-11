@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,20 +42,50 @@ fun ItemsScreen(
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showMenu by remember { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
+    val pullToRefreshState = rememberPullToRefreshState()
+
+    // Function to load items
+    val loadItemsFunction: () -> Unit = {
+        scope.launch {
+            loadItems(apiClient,
+                onSuccess = { itemsList ->
+                    items = itemsList
+                    isLoading = false
+                    isRefreshing = false
+                    errorMessage = null
+                },
+                onError = { error ->
+                    errorMessage = error
+                    isLoading = false
+                    isRefreshing = false
+                }
+            )
+        }
+    }
+
+    // Function to refresh items
+    val refreshItems: () -> Unit = {
+        isRefreshing = true
+        errorMessage = null
+        scope.launch {
+            loadItems(apiClient,
+                onSuccess = { itemsList ->
+                    items = itemsList
+                    isRefreshing = false
+                },
+                onError = { error ->
+                    errorMessage = error
+                    isRefreshing = false
+                }
+            )
+        }
+    }
 
     LaunchedEffect(Unit) {
-        loadItems(apiClient,
-            onSuccess = { itemsList ->
-                items = itemsList
-                isLoading = false
-            },
-            onError = { error ->
-                errorMessage = error
-                isLoading = false
-            }
-        )
+        loadItemsFunction()
     }
 
     Scaffold(
@@ -134,18 +166,7 @@ fun ItemsScreen(
                             onClick = {
                                 isLoading = true
                                 errorMessage = null
-                                scope.launch {
-                                    loadItems(apiClient,
-                                        onSuccess = { itemsList ->
-                                            items = itemsList
-                                            isLoading = false
-                                        },
-                                        onError = { error ->
-                                            errorMessage = error
-                                            isLoading = false
-                                        }
-                                    )
-                                }
+                                loadItemsFunction()
                             }
                         ) {
                             Text("Retry")
@@ -153,48 +174,64 @@ fun ItemsScreen(
                     }
                 }
                 items.isEmpty() -> {
-                    Column(
-                        modifier = Modifier.align(Alignment.Center),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = refreshItems,
+                        state = pullToRefreshState,
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        Text(
-                            text = "No items found",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = onCreateItem) {
-                            Text("Create your first item")
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .wrapContentSize(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "No items found",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(onClick = onCreateItem) {
+                                Text("Create your first item")
+                            }
                         }
                     }
                 }
                 else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = refreshItems,
+                        state = pullToRefreshState,
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        items(items) { item ->
-                            ItemCard(
-                                item = item,
-                                onEdit = { onEditItem(item) },
-                                onDelete = {
-                                    scope.launch {
-                                        try {
-                                            apiClient.deleteItem(item.id)
-                                            loadItems(apiClient,
-                                                onSuccess = { itemsList ->
-                                                    items = itemsList
-                                                },
-                                                onError = { error ->
-                                                    errorMessage = error
-                                                }
-                                            )
-                                        } catch (e: Exception) {
-                                            errorMessage = "Error deleting item: ${e.message}"
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(items) { item ->
+                                ItemCard(
+                                    item = item,
+                                    onEdit = { onEditItem(item) },
+                                    onDelete = {
+                                        scope.launch {
+                                            try {
+                                                apiClient.deleteItem(item.id)
+                                                loadItems(apiClient,
+                                                    onSuccess = { itemsList ->
+                                                        items = itemsList
+                                                    },
+                                                    onError = { error ->
+                                                        errorMessage = error
+                                                    }
+                                                )
+                                            } catch (e: Exception) {
+                                                errorMessage = "Error deleting item: ${e.message}"
+                                            }
                                         }
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
