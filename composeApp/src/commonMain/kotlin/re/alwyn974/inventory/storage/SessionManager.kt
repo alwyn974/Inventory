@@ -40,19 +40,6 @@ class SessionManager private constructor() {
         }
     }
 
-    init {
-        // Try to load saved session on initialization asynchronously
-        println("SessionManager: Initializing with DataStore...")
-        CoroutineScope(Dispatchers.Default).launch {
-            try {
-                val loaded = loadSavedSession()
-                println("SessionManager: Session loaded: $loaded")
-            } catch (e: Exception) {
-                println("SessionManager: Failed to load session during init: ${e.message}")
-            }
-        }
-    }
-
     suspend fun saveSession(accessToken: String, refreshToken: String, user: UserDto) {
         println("SessionManager: Saving session for user: ${user.username}")
         this.accessToken = accessToken
@@ -98,12 +85,12 @@ class SessionManager private constructor() {
     fun getAccessToken(): String? = accessToken
     fun getRefreshToken(): String? = refreshToken
 
-    private suspend fun loadSavedSession(): Boolean {
+    suspend fun loadSavedSession(): Boolean {
         return try {
             println("SessionManager: Loading saved session from DataStore...")
             val sessionJson = dataStoreManager.getSession()
             if (sessionJson != null) {
-                println("SessionManager: Found saved session data: ${sessionJson.take(100)}...")
+                println("SessionManager: Found saved session data: ${sessionJson}...")
                 val sessionData = json.decodeFromString<SessionData>(sessionJson)
                 accessToken = sessionData.accessToken
                 refreshToken = sessionData.refreshToken
