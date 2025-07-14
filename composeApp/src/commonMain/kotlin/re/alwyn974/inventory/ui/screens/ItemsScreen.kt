@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
@@ -31,17 +30,12 @@ import re.alwyn974.inventory.shared.model.ItemDto
 @Composable
 fun ItemsScreen(
     apiClient: ApiClient,
-    onLogout: () -> Unit,
     onCreateItem: () -> Unit,
-    onEditItem: (ItemDto) -> Unit,
-    onManageCategories: () -> Unit,
-    onManageTags: () -> Unit,
-    onManageFolders: () -> Unit
+    onEditItem: (ItemDto) -> Unit
 ) {
     var items by remember { mutableStateOf<List<ItemDto>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
-    var showMenu by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
@@ -91,46 +85,7 @@ fun ItemsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Inventory") },
-                actions = {
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Menu")
-                    }
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Manage Categories") },
-                            onClick = {
-                                showMenu = false
-                                onManageCategories()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Manage Tags") },
-                            onClick = {
-                                showMenu = false
-                                onManageTags()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Manage Folders") },
-                            onClick = {
-                                showMenu = false
-                                onManageFolders()
-                            }
-                        )
-                        HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
-                        DropdownMenuItem(
-                            text = { Text("Logout") },
-                            onClick = {
-                                showMenu = false
-                                onLogout()
-                            }
-                        )
-                    }
-                }
+                title = { Text("Inventory") }
             )
         },
         floatingActionButton = {
