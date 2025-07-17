@@ -83,11 +83,6 @@ fun ItemsScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Inventory") }
-            )
-        },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onCreateItem
